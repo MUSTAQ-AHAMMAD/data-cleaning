@@ -197,15 +197,103 @@ def detect_duplicates_page():
     # Detection method selection
     detection_method = st.radio(
         "Select Detection Method",
-        ["Exact Match", "Fuzzy Match (AI-Powered)"],
-        help="Exact Match finds identical records. Fuzzy Match uses AI to find similar records."
+        ["Smart AI (Automatic)", "Exact Match", "Fuzzy Match (AI-Powered)"],
+        help="Smart AI automatically detects duplicates like a human would. Exact Match finds identical records. Fuzzy Match uses AI to find similar records."
     )
     
     # Column selection
-    st.markdown("### Select Columns to Compare")
+    st.markdown("### Configure Detection")
     available_columns = list(df.columns)
     
-    if detection_method == "Exact Match":
+    if detection_method == "Smart AI (Automatic)":
+        st.info("🤖 Smart AI will automatically identify the best columns and strategies for duplicate detection, similar to how a human would analyze the data.")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            auto_detect = st.checkbox("Auto-detect key columns", value=True, 
+                                     help="Let AI automatically identify which columns are most important for duplicate detection (IDs, names, emails, etc.)")
+        with col2:
+            smart_threshold = st.slider(
+                "Detection Sensitivity",
+                min_value=60,
+                max_value=95,
+                value=80,
+                help="Lower values detect more potential duplicates but may include false positives. 80% is balanced."
+            )
+        
+        if not auto_detect:
+            selected_columns = st.multiselect(
+                "Manual column selection",
+                available_columns,
+                default=available_columns[:min(3, len(available_columns))]
+            )
+        else:
+            selected_columns = None
+        
+        if st.button("🧠 Run Smart AI Detection", type="primary"):
+            with st.spinner("🤖 AI is analyzing your data with human-like intelligence..."):
+                try:
+                    duplicate_groups, num_duplicates, uncleaned_df = cleaner.detect_duplicates_smart_ai(
+                        auto_detect_columns=auto_detect,
+                        custom_columns=selected_columns,
+                        threshold=smart_threshold
+                    )
+                    
+                    st.session_state.duplicates_detected = True
+                    st.session_state.duplicate_groups = duplicate_groups
+                    st.session_state.uncleaned_data = uncleaned_df
+                    st.session_state.detection_method = 'smart_ai'
+                    
+                    report = cleaner.get_cleaning_report()
+                    
+                    if num_duplicates > 0:
+                        st.success(f"✅ Smart AI found {len(duplicate_groups)} groups containing {num_duplicates} duplicate records!")
+                        
+                        # Show what columns were analyzed
+                        st.info(f"📊 Analyzed columns: {', '.join(report.get('columns_analyzed', []))}")
+                        
+                        # Show confidence distribution
+                        if report.get('confidence_scores'):
+                            avg_confidence = np.mean(report['confidence_scores'])
+                            st.metric("Average Confidence", f"{avg_confidence:.1f}%")
+                        
+                        # Show duplicate groups
+                        st.markdown("### Duplicate Groups")
+                        high_conf_groups = [g for g in duplicate_groups if g.get('group_confidence', 0) >= 70]
+                        low_conf_groups = [g for g in duplicate_groups if g.get('group_confidence', 0) < 70]
+                        
+                        if high_conf_groups:
+                            st.markdown(f"#### 🟢 High Confidence Matches ({len(high_conf_groups)} groups)")
+                            for idx, group in enumerate(high_conf_groups, 1):
+                                records = group['records']
+                                confidence = group['group_confidence']
+                                with st.expander(f"Group {idx} - {len(records)} similar records (Confidence: {confidence:.1f}%)"):
+                                    group_df = pd.DataFrame([r['record'] for r in records])
+                                    similarities = [r.get('similarity', 100) for r in records[1:]]
+                                    
+                                    st.write(f"**Similarity Scores:** {[f'{s:.1f}%' for s in similarities]}")
+                                    st.dataframe(group_df, use_container_width=True)
+                        
+                        if low_conf_groups:
+                            st.markdown(f"#### 🟡 Lower Confidence Matches ({len(low_conf_groups)} groups) - Review Recommended")
+                            for idx, group in enumerate(low_conf_groups, 1):
+                                records = group['records']
+                                confidence = group['group_confidence']
+                                with st.expander(f"Group {idx} - {len(records)} records (Confidence: {confidence:.1f}%)"):
+                                    group_df = pd.DataFrame([r['record'] for r in records])
+                                    st.warning("⚠️ Lower confidence match - please review before cleaning")
+                                    st.dataframe(group_df, use_container_width=True)
+                        
+                        # Show uncleaned data info
+                        if not uncleaned_df.empty:
+                            st.warning(f"⚠️ {len(uncleaned_df)} records flagged for manual review (low confidence duplicates)")
+                    else:
+                        st.info("🎉 No duplicates found with Smart AI detection!")
+                
+                except Exception as e:
+                    st.error(f"Error during Smart AI detection: {str(e)}")
+    
+    elif detection_method == "Exact Match":
         selected_columns = st.multiselect(
             "Select columns for exact matching (leave empty to use all columns)",
             available_columns,
@@ -219,6 +307,7 @@ def detect_duplicates_page():
                 
                 st.session_state.duplicates_detected = True
                 st.session_state.duplicate_groups = None
+                st.session_state.detection_method = 'exact'
                 
                 if num_duplicates > 0:
                     st.success(f"✅ Found {num_duplicates} duplicate records!")
@@ -255,6 +344,7 @@ def detect_duplicates_page():
                     
                     st.session_state.duplicates_detected = True
                     st.session_state.duplicate_groups = duplicate_groups
+                    st.session_state.detection_method = 'fuzzy'
                     
                     if num_duplicates > 0:
                         st.success(f"✅ Found {len(duplicate_groups)} groups containing {num_duplicates} duplicate records!")
@@ -294,18 +384,51 @@ def clean_data_page():
             st.info(f"Detected {report.get('duplicates_found', 0)} duplicates using {report.get('cleaning_method', 'N/A')}")
             
             if report.get('duplicates_found', 0) > 0:
-                if st.button("🗑️ Remove Duplicates", type="primary"):
-                    with st.spinner("Removing duplicates..."):
-                        if st.session_state.duplicate_groups:
-                            cleaner.remove_fuzzy_duplicates(st.session_state.duplicate_groups)
-                        else:
-                            cols = report.get('columns_analyzed')
-                            cleaner.remove_exact_duplicates(columns=cols if cols else None)
-                        
-                        st.session_state.cleaning_complete = True
-                        new_report = cleaner.get_cleaning_report()
-                        st.success(f"✅ Removed {new_report['records_removed']} duplicate records!")
-                        st.info(f"Dataset now has {new_report['final_records']} records.")
+                detection_method = st.session_state.get('detection_method', 'unknown')
+                
+                # Special handling for Smart AI
+                if detection_method == 'smart_ai':
+                    st.markdown("#### Smart AI Cleaning Options")
+                    
+                    clean_option = st.radio(
+                        "Select cleaning strategy",
+                        ["High confidence only (Recommended)", "All duplicates"],
+                        help="High confidence only removes duplicates the AI is very sure about. Low confidence matches will be exported separately for manual review."
+                    )
+                    
+                    high_conf_only = (clean_option == "High confidence only (Recommended)")
+                    
+                    if st.button("🗑️ Remove Duplicates with Smart AI", type="primary"):
+                        with st.spinner("Removing duplicates..."):
+                            cleaned_data, uncleaned_data = cleaner.remove_smart_ai_duplicates(
+                                st.session_state.duplicate_groups,
+                                high_confidence_only=high_conf_only
+                            )
+                            
+                            st.session_state.cleaning_complete = True
+                            st.session_state.has_uncleaned = not uncleaned_data.empty
+                            
+                            new_report = cleaner.get_cleaning_report()
+                            st.success(f"✅ Removed {new_report['records_removed']} duplicate records!")
+                            st.info(f"✨ Cleaned dataset now has {len(cleaned_data)} records.")
+                            
+                            if not uncleaned_data.empty:
+                                st.warning(f"⚠️ {len(uncleaned_data)} records require manual review (low confidence duplicates)")
+                                st.info("💡 You can export both cleaned and uncleaned data separately from the Export page.")
+                else:
+                    # Original logic for exact/fuzzy
+                    if st.button("🗑️ Remove Duplicates", type="primary"):
+                        with st.spinner("Removing duplicates..."):
+                            if st.session_state.duplicate_groups:
+                                cleaner.remove_fuzzy_duplicates(st.session_state.duplicate_groups)
+                            else:
+                                cols = report.get('columns_analyzed')
+                                cleaner.remove_exact_duplicates(columns=cols if cols else None)
+                            
+                            st.session_state.cleaning_complete = True
+                            new_report = cleaner.get_cleaning_report()
+                            st.success(f"✅ Removed {new_report['records_removed']} duplicate records!")
+                            st.info(f"Dataset now has {new_report['final_records']} records.")
     
     with tab2:
         st.markdown("### Handle Missing Values")
@@ -494,12 +617,20 @@ def export_data_page():
         return
     
     cleaner = st.session_state.cleaner
-    df = cleaner.df
+    has_uncleaned = st.session_state.get('has_uncleaned', False)
     
-    st.info("Export your cleaned data in various formats.")
+    st.info("Export your cleaned data in various formats. " + 
+            ("Uncleaned data (requiring manual review) can also be exported separately." if has_uncleaned else ""))
+    
+    # Check if we have separate cleaned/uncleaned data
+    if cleaner.cleaned_data is not None:
+        df = cleaner.cleaned_data
+        st.success("✅ Showing cleaned data from Smart AI processing")
+    else:
+        df = cleaner.df
     
     # Preview current data
-    st.markdown("### Current Data Preview")
+    st.markdown("### Cleaned Data Preview")
     st.dataframe(df.head(10), use_container_width=True)
     
     col1, col2 = st.columns(2)
@@ -517,50 +648,80 @@ def export_data_page():
     col1, col2 = st.columns(2)
     
     with col1:
+        st.markdown("#### Cleaned Data")
         if export_format == "CSV":
             csv = df.to_csv(index=False)
             st.download_button(
-                label="📥 Download CSV",
+                label="📥 Download Cleaned CSV",
                 data=csv,
                 file_name=f"cleaned_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
                 mime="text/csv",
                 type="primary"
             )
-    
-    with col2:
-        if export_format == "Excel":
+        else:  # Excel
             buffer = io.BytesIO()
             with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
                 df.to_excel(writer, index=False, sheet_name='Cleaned Data')
             
             st.download_button(
-                label="📥 Download Excel",
+                label="📥 Download Cleaned Excel",
                 data=buffer.getvalue(),
                 file_name=f"cleaned_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 type="primary"
             )
     
+    with col2:
+        if has_uncleaned and cleaner.uncleaned_data is not None and not cleaner.uncleaned_data.empty:
+            st.markdown("#### Uncleaned Data (Manual Review Required)")
+            st.warning(f"⚠️ {len(cleaner.uncleaned_data)} records need review")
+            
+            if export_format == "CSV":
+                uncleaned_csv = cleaner.uncleaned_data.to_csv(index=False)
+                st.download_button(
+                    label="📥 Download Uncleaned CSV",
+                    data=uncleaned_csv,
+                    file_name=f"uncleaned_data_review_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    mime="text/csv"
+                )
+            else:  # Excel
+                buffer2 = io.BytesIO()
+                with pd.ExcelWriter(buffer2, engine='openpyxl') as writer:
+                    cleaner.uncleaned_data.to_excel(writer, index=False, sheet_name='Requires Review')
+                
+                st.download_button(
+                    label="📥 Download Uncleaned Excel",
+                    data=buffer2.getvalue(),
+                    file_name=f"uncleaned_data_review_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+        else:
+            st.info("No uncleaned data - all records were processed successfully!")
+    
     # Summary
     st.markdown("### Export Summary")
     report = cleaner.get_cleaning_report()
     
+    summary_rows = [
+        ["Original Records", report.get('total_records', 0)],
+        ["Exported Records (Cleaned)", len(df)],
+        ["Duplicates Removed", report.get('records_removed', 0)],
+        ["Cleaning Method", report.get('cleaning_method', 'Not applied')],
+    ]
+    
+    if has_uncleaned and cleaner.uncleaned_data is not None:
+        summary_rows.append(["Records Requiring Review", len(cleaner.uncleaned_data)])
+        summary_rows.append(["Data Quality", "High (with manual review recommended)"])
+    else:
+        summary_rows.append(["Data Quality", "High" if report.get('records_removed', 0) > 0 else "Not cleaned"])
+    
     summary_data = {
-        "Metric": [
-            "Original Records",
-            "Exported Records",
-            "Duplicates Removed",
-            "Cleaning Method",
-            "Data Quality"
-        ],
-        "Value": [
-            report.get('total_records', 0),
-            len(df),
-            report.get('records_removed', 0),
-            report.get('cleaning_method', 'Not applied'),
-            "High" if report.get('records_removed', 0) > 0 else "Not cleaned"
-        ]
+        "Metric": [row[0] for row in summary_rows],
+        "Value": [row[1] for row in summary_rows]
     }
+    
+    st.table(pd.DataFrame(summary_data))
+    
     
     st.table(pd.DataFrame(summary_data))
 
