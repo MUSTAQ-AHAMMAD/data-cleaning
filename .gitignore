@@ -46,3 +46,6 @@ Thumbs.db
 # Logs
 *.log
 logs/
+
+# Screenshots (uploaded to GitHub, no need to commit large files)
+screenshots/
