@@ -77,8 +77,6 @@ This application is optimized to handle large datasets efficiently:
 - **Progress indicators**: Clear feedback with time estimates for long operations
 
 See [PERFORMANCE.md](PERFORMANCE.md) for detailed benchmarks and optimization details.
-   - Fast and efficient
-   - Perfect for finding exact duplicates
 
 ## 🚀 Quick Start
 

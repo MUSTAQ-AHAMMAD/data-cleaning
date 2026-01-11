@@ -310,7 +310,7 @@ class DataCleaner:
                 comparison_indices = range(i + 1, n_records)
             
             for j in comparison_indices:
-                if j <= i or j in checked_indices:
+                if j == i or j in checked_indices:  # Skip self and already checked
                     continue
                 
                 compare_record = df_records[j]
@@ -562,7 +562,7 @@ class DataCleaner:
                 comparison_indices = range(i + 1, n_records)
             
             for j in comparison_indices:
-                if j <= i or j in checked_indices:
+                if j == i or j in checked_indices:  # Skip self and already checked
                     continue
                 
                 compare_record = df_records[j]

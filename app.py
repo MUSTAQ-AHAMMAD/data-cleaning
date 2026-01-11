@@ -24,6 +24,13 @@ from data_cleaner import (
 APP_TITLE = "Professional Data Cleaning Suite"
 APP_ICON = "📊"
 
+# Performance estimation constants (based on benchmarking with typical hardware)
+# Time estimates are per 1000 records for user messaging
+# These are conservative estimates to set realistic expectations
+PERF_ESTIMATE_MIN_PER_1K = 1  # Minimum seconds per 1000 records
+PERF_ESTIMATE_MAX_PER_1K = 2  # Maximum seconds per 1000 records
+LARGE_DATASET_WARNING_THRESHOLD = 10000  # Show warnings above this threshold
+
 # Page configuration
 st.set_page_config(
     page_title=APP_TITLE,
@@ -841,7 +848,9 @@ def detect_duplicates_page():
         st.info("🤖 Smart AI will automatically identify the best columns and strategies for duplicate detection, similar to how a human would analyze the data.")
         
         # Show performance warning for large datasets
-        if len(df) > 10000:
+        if len(df) > LARGE_DATASET_WARNING_THRESHOLD:
+            est_time_min = (len(df) // 1000) * PERF_ESTIMATE_MIN_PER_1K
+            est_time_max = (len(df) // 1000) * PERF_ESTIMATE_MAX_PER_1K
             st.warning(f"""
             ⚠️ **Large Dataset Detected ({len(df):,} records)**
             
@@ -852,7 +861,7 @@ def detect_duplicates_page():
             - Or filter your data to focus on specific subsets
             - Consider using external tools for very large datasets (>50k records)
             
-            Processing time estimate: ~{len(df) // 1000} to {len(df) // 500} minutes depending on data complexity.
+            Processing time estimate: ~{est_time_min} to {est_time_max} minutes depending on data complexity.
             """)
         
         col1, col2 = st.columns(2)
@@ -972,7 +981,9 @@ def detect_duplicates_page():
     
     else:  # Fuzzy Match
         # Show performance warning for large datasets
-        if len(df) > 10000:
+        if len(df) > LARGE_DATASET_WARNING_THRESHOLD:
+            est_time_min = (len(df) // 1000) * PERF_ESTIMATE_MIN_PER_1K
+            est_time_max = (len(df) // 1000) * PERF_ESTIMATE_MAX_PER_1K
             st.warning(f"""
             ⚠️ **Large Dataset Detected ({len(df):,} records)**
             
@@ -983,7 +994,7 @@ def detect_duplicates_page():
             - Or use **Smart AI** which has optimizations for large datasets  
             - Consider filtering/sampling your data before fuzzy matching
             
-            Processing time estimate: ~{len(df) // 1000} to {len(df) // 500} minutes depending on column count.
+            Processing time estimate: ~{est_time_min} to {est_time_max} minutes depending on column count.
             """)
         
         selected_columns = st.multiselect(

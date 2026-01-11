@@ -72,6 +72,14 @@ The system now provides performance recommendations:
 
 Based on testing with various dataset sizes:
 
+### Test Environment
+- **Hardware**: Standard GitHub Actions runner (2-core CPU, 7 GB RAM)
+- **Dataset**: Realistic data with 6 columns (ID, Name, Email, Phone, City, Age)
+- **Data Distribution**: Mixed with typical name/email patterns
+- **Blocking Effectiveness**: Average block size of 50-200 records (vs 20,000 without blocking)
+
+### Benchmark Results
+
 | Operation | 1k Records | 10k Records | 20k Records | 50k Records |
 |-----------|-----------|------------|-------------|-------------|
 | CSV Upload | <0.01s | <0.02s | ~0.02s | ~0.05s |
@@ -80,6 +88,12 @@ Based on testing with various dataset sizes:
 | Fuzzy (no blocking) | ~0.5s | ~60s | ~240s | >600s |
 | Fuzzy (with blocking) | ~0.02s | ~2s | ~5s | ~15s |
 | Smart AI (with blocking) | ~0.03s | ~3s | ~8s | ~25s |
+
+**Note**: Times may vary based on:
+- Number of columns being compared
+- Complexity of data (more unique values = better blocking performance)
+- System load and available memory
+- Similarity threshold (lower thresholds require more comparisons)
 
 ## Best Practices for Large Datasets
 
