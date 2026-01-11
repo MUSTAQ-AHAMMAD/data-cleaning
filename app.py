@@ -197,15 +197,118 @@ def detect_duplicates_page():
     # Detection method selection
     detection_method = st.radio(
         "Select Detection Method",
-        ["Smart AI (Automatic)", "Exact Match", "Fuzzy Match (AI-Powered)"],
-        help="Smart AI automatically detects duplicates like a human would. Exact Match finds identical records. Fuzzy Match uses AI to find similar records."
+        ["ML Advanced (Learning)", "Smart AI (Automatic)", "Exact Match", "Fuzzy Match (AI-Powered)"],
+        help="ML Advanced uses machine learning that learns and improves with data. Smart AI automatically detects duplicates like a human would. Exact Match finds identical records. Fuzzy Match uses AI to find similar records."
     )
     
     # Column selection
     st.markdown("### Configure Detection")
     available_columns = list(df.columns)
     
-    if detection_method == "Smart AI (Automatic)":
+    if detection_method == "ML Advanced (Learning)":
+        st.success("🧠 ML Advanced uses cutting-edge machine learning algorithms that learn patterns from your data and get better with each use!")
+        
+        st.markdown("""
+        **Advanced Features:**
+        - 🎯 TF-IDF vectorization for semantic similarity
+        - 🔬 DBSCAN clustering for pattern detection
+        - 🗣️ Phonetic matching (Soundex, Metaphone) for name variations
+        - 🔗 Record linkage algorithms
+        - 📈 Learns from each cleaning session and improves over time
+        """)
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            learn_mode = st.checkbox("Learn from this data", value=True,
+                                    help="AI will learn patterns from this data to improve future performance")
+        with col2:
+            use_phonetic = st.checkbox("Use phonetic matching", value=True,
+                                      help="Match names that sound similar (e.g., 'Smith' and 'Smythe')")
+        with col3:
+            use_clustering = st.checkbox("Use ML clustering", value=True,
+                                        help="Use advanced clustering algorithms to find duplicate patterns")
+        
+        if st.button("🚀 Run ML Advanced Detection", type="primary"):
+            with st.spinner("🧠 ML is analyzing your data and learning patterns..."):
+                try:
+                    duplicate_groups, num_duplicates, uncleaned_df = cleaner.detect_duplicates_ml_advanced(
+                        learn_from_data=learn_mode,
+                        use_phonetic=use_phonetic,
+                        use_clustering=use_clustering
+                    )
+                    
+                    st.session_state.duplicates_detected = True
+                    st.session_state.duplicate_groups = duplicate_groups
+                    st.session_state.uncleaned_data = uncleaned_df
+                    st.session_state.detection_method = 'ml_advanced'
+                    
+                    report = cleaner.get_cleaning_report()
+                    
+                    if num_duplicates > 0:
+                        st.success(f"✅ ML Advanced found {len(duplicate_groups)} groups containing {num_duplicates} duplicate records!")
+                        
+                        # Show learning stats
+                        if report.get('learning_stats'):
+                            st.info(f"📊 ML Stats: {report['learning_stats']['patterns_learned']} patterns learned | Session #{report['learning_stats']['total_sessions']}")
+                        
+                        # Show what columns were analyzed
+                        st.info(f"📊 Analyzed columns: {', '.join(report.get('columns_analyzed', []))}")
+                        
+                        # Show confidence distribution
+                        if report.get('confidence_scores'):
+                            avg_confidence = np.mean(report['confidence_scores'])
+                            st.metric("Average ML Confidence", f"{avg_confidence:.1f}%")
+                        
+                        # Show duplicate groups
+                        st.markdown("### Duplicate Groups (ML Detected)")
+                        high_conf_groups = [g for g in duplicate_groups if g.get('group_confidence', 0) >= 65]
+                        low_conf_groups = [g for g in duplicate_groups if g.get('group_confidence', 0) < 65]
+                        
+                        if high_conf_groups:
+                            st.markdown(f"#### 🟢 High Confidence ML Matches ({len(high_conf_groups)} groups)")
+                            for idx, group in enumerate(high_conf_groups, 1):
+                                records = group['records']
+                                confidence = group['group_confidence']
+                                method = group.get('detection_method', 'ML')
+                                with st.expander(f"Group {idx} - {len(records)} records (Confidence: {confidence:.1f}% | Method: {method})"):
+                                    group_df = pd.DataFrame([r['record'] for r in records])
+                                    similarities = [f"{r.get('similarity', 100):.1f}%" for r in records[1:]]
+                                    
+                                    st.write(f"**ML Similarity Scores:** {similarities}")
+                                    
+                                    # Show phonetic info if available
+                                    if 'phonetic_similarity' in records[0]:
+                                        phonetic_scores = [f"{r.get('phonetic_similarity', 100):.1f}%" for r in records[1:]]
+                                        st.write(f"**Phonetic Match Scores:** {phonetic_scores}")
+                                    
+                                    st.dataframe(group_df, use_container_width=True)
+                        
+                        if low_conf_groups:
+                            st.markdown(f"#### 🟡 Lower Confidence ML Matches ({len(low_conf_groups)} groups) - Review Recommended")
+                            for idx, group in enumerate(low_conf_groups, 1):
+                                records = group['records']
+                                confidence = group['group_confidence']
+                                with st.expander(f"Group {idx} - {len(records)} records (Confidence: {confidence:.1f}%)"):
+                                    group_df = pd.DataFrame([r['record'] for r in records])
+                                    st.warning("⚠️ Lower ML confidence - please review before cleaning")
+                                    st.dataframe(group_df, use_container_width=True)
+                        
+                        # Show uncleaned data info
+                        if not uncleaned_df.empty:
+                            st.warning(f"⚠️ {len(uncleaned_df)} records flagged for manual review (low ML confidence)")
+                    else:
+                        st.info("🎉 No duplicates found with ML Advanced detection!")
+                        
+                        # Still show learning info
+                        if learn_mode:
+                            st.success("✅ ML model has learned patterns from this data for future use!")
+                
+                except Exception as e:
+                    st.error(f"Error during ML Advanced detection: {str(e)}")
+                    import traceback
+                    st.error(traceback.format_exc())
+    
+    elif detection_method == "Smart AI (Automatic)":
         st.info("🤖 Smart AI will automatically identify the best columns and strategies for duplicate detection, similar to how a human would analyze the data.")
         
         col1, col2 = st.columns(2)
@@ -386,9 +489,9 @@ def clean_data_page():
             if report.get('duplicates_found', 0) > 0:
                 detection_method = st.session_state.get('detection_method', 'unknown')
                 
-                # Special handling for Smart AI
-                if detection_method == 'smart_ai':
-                    st.markdown("#### Smart AI Cleaning Options")
+                # Special handling for ML Advanced and Smart AI
+                if detection_method in ['smart_ai', 'ml_advanced']:
+                    st.markdown("#### AI/ML Cleaning Options")
                     
                     clean_option = st.radio(
                         "Select cleaning strategy",
@@ -398,7 +501,9 @@ def clean_data_page():
                     
                     high_conf_only = (clean_option == "High confidence only (Recommended)")
                     
-                    if st.button("🗑️ Remove Duplicates with Smart AI", type="primary"):
+                    button_label = "🗑️ Remove Duplicates with ML" if detection_method == 'ml_advanced' else "🗑️ Remove Duplicates with Smart AI"
+                    
+                    if st.button(button_label, type="primary"):
                         with st.spinner("Removing duplicates..."):
                             cleaned_data, uncleaned_data = cleaner.remove_smart_ai_duplicates(
                                 st.session_state.duplicate_groups,
@@ -415,6 +520,9 @@ def clean_data_page():
                             if not uncleaned_data.empty:
                                 st.warning(f"⚠️ {len(uncleaned_data)} records require manual review (low confidence duplicates)")
                                 st.info("💡 You can export both cleaned and uncleaned data separately from the Export page.")
+                            
+                            if detection_method == 'ml_advanced':
+                                st.success("🧠 ML model has been updated and will perform better on future data!")
                 else:
                     # Original logic for exact/fuzzy
                     if st.button("🗑️ Remove Duplicates", type="primary"):

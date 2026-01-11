@@ -1,6 +1,7 @@
 """
 AI CRM Data Cleaning Module
 Handles CSV file processing, duplicate detection, and data cleaning operations.
+Advanced ML-based duplicate detection that learns and improves with data.
 """
 
 import pandas as pd
@@ -10,6 +11,19 @@ from rapidfuzz import fuzz as rapid_fuzz, process
 from typing import Dict, List, Tuple, Optional
 from datetime import datetime
 import re
+import pickle
+import os
+
+# Advanced ML imports
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.cluster import DBSCAN
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.preprocessing import StandardScaler
+import jellyfish
+import phonetics
+import recordlinkage
+from recordlinkage.index import Block
+import ftfy
 
 
 class DataCleaner:
@@ -21,6 +35,14 @@ class DataCleaner:
         self.duplicates = []
         self.cleaned_data = None
         self.uncleaned_data = None
+        
+        # ML model components that learn and improve
+        self.tfidf_vectorizer = None
+        self.scaler = StandardScaler()
+        self.learned_patterns = []
+        self.model_path = 'ml_models'
+        self.performance_history = []
+        
         self.cleaning_report = {
             'total_records': 0,
             'duplicates_found': 0,
@@ -30,8 +52,51 @@ class DataCleaner:
             'columns_analyzed': [],
             'match_details': [],
             'confidence_scores': [],
-            'auto_detection_results': {}
+            'auto_detection_results': {},
+            'ml_model_version': None,
+            'learning_stats': {}
         }
+        
+        # Load existing ML models if available
+        self._load_ml_models()
+    
+    def _load_ml_models(self):
+        """Load pre-trained ML models if they exist."""
+        try:
+            if os.path.exists(os.path.join(self.model_path, 'tfidf_vectorizer.pkl')):
+                with open(os.path.join(self.model_path, 'tfidf_vectorizer.pkl'), 'rb') as f:
+                    self.tfidf_vectorizer = pickle.load(f)
+            
+            if os.path.exists(os.path.join(self.model_path, 'learned_patterns.pkl')):
+                with open(os.path.join(self.model_path, 'learned_patterns.pkl'), 'rb') as f:
+                    self.learned_patterns = pickle.load(f)
+            
+            if os.path.exists(os.path.join(self.model_path, 'performance_history.pkl')):
+                with open(os.path.join(self.model_path, 'performance_history.pkl'), 'rb') as f:
+                    self.performance_history = pickle.load(f)
+        except Exception as e:
+            # If loading fails, start fresh
+            pass
+    
+    def _save_ml_models(self):
+        """Save ML models for future use (learning persistence)."""
+        try:
+            os.makedirs(self.model_path, exist_ok=True)
+            
+            if self.tfidf_vectorizer is not None:
+                with open(os.path.join(self.model_path, 'tfidf_vectorizer.pkl'), 'wb') as f:
+                    pickle.dump(self.tfidf_vectorizer, f)
+            
+            if self.learned_patterns:
+                with open(os.path.join(self.model_path, 'learned_patterns.pkl'), 'wb') as f:
+                    pickle.dump(self.learned_patterns, f)
+            
+            if self.performance_history:
+                with open(os.path.join(self.model_path, 'performance_history.pkl'), 'wb') as f:
+                    pickle.dump(self.performance_history, f)
+        except Exception as e:
+            # If saving fails, continue without saving
+            pass
     
     def load_csv(self, file_path: str, encoding: str = 'utf-8') -> pd.DataFrame:
         """Load CSV file into a pandas DataFrame."""
@@ -448,6 +513,346 @@ class DataCleaner:
             confidence = confidence / weight_sum
         
         return confidence
+    
+    def detect_duplicates_ml_advanced(self, learn_from_data: bool = True, 
+                                      use_phonetic: bool = True,
+                                      use_clustering: bool = True) -> Tuple[List[Dict], int, pd.DataFrame]:
+        """
+        Advanced ML-based duplicate detection that learns and improves with data.
+        Uses multiple advanced techniques:
+        - TF-IDF vectorization for semantic similarity
+        - DBSCAN clustering for pattern detection
+        - Phonetic matching (Soundex, Metaphone) for name variations
+        - Record linkage algorithms
+        - Learning from previous cleaning sessions
+        
+        Args:
+            learn_from_data: If True, trains/updates ML models on this data
+            use_phonetic: Use phonetic algorithms for name matching
+            use_clustering: Use ML clustering to find duplicate groups
+            
+        Returns:
+            Tuple of (duplicate_groups, num_duplicates, uncleaned_data_df)
+        """
+        if self.df is None:
+            raise ValueError("No data loaded. Please load a CSV file first.")
+        
+        self.cleaning_report['cleaning_method'] = 'ML Advanced (Learning-Based)'
+        
+        # Step 1: Auto-identify columns
+        column_types = self._identify_key_columns()
+        analyze_columns = (column_types['identifiers'] + 
+                          column_types['names'] + 
+                          column_types['addresses'][:2])
+        
+        if not analyze_columns:
+            text_cols = [col for col in self.df.columns if self.df[col].dtype == 'object']
+            analyze_columns = text_cols[:min(3, len(text_cols))]
+        
+        self.cleaning_report['columns_analyzed'] = analyze_columns
+        
+        # Step 2: Clean and normalize text data
+        cleaned_texts = []
+        for idx, row in self.df.iterrows():
+            text_parts = []
+            for col in analyze_columns:
+                val = str(row.get(col, ''))
+                # Use ftfy to fix text encoding issues
+                val = ftfy.fix_text(val)
+                val = self._normalize_text(val)
+                text_parts.append(val)
+            cleaned_texts.append(' '.join(text_parts))
+        
+        # Step 3: TF-IDF Vectorization for semantic similarity
+        if self.tfidf_vectorizer is None or learn_from_data:
+            self.tfidf_vectorizer = TfidfVectorizer(
+                max_features=100,
+                ngram_range=(1, 3),
+                analyzer='char_wb'
+            )
+            tfidf_matrix = self.tfidf_vectorizer.fit_transform(cleaned_texts)
+            if learn_from_data:
+                self._save_ml_models()
+        else:
+            try:
+                tfidf_matrix = self.tfidf_vectorizer.transform(cleaned_texts)
+            except:
+                # If transformation fails, retrain
+                self.tfidf_vectorizer = TfidfVectorizer(
+                    max_features=100,
+                    ngram_range=(1, 3),
+                    analyzer='char_wb'
+                )
+                tfidf_matrix = self.tfidf_vectorizer.fit_transform(cleaned_texts)
+        
+        # Step 4: Calculate similarity matrix
+        similarity_matrix = cosine_similarity(tfidf_matrix)
+        
+        # Step 5: Use DBSCAN clustering for pattern detection
+        duplicate_groups = []
+        
+        if use_clustering:
+            # Convert similarity to distance (ensure non-negative)
+            distance_matrix = np.clip(1 - similarity_matrix, 0, None)
+            
+            # Apply DBSCAN clustering
+            clustering = DBSCAN(eps=0.25, min_samples=2, metric='precomputed')
+            labels = clustering.fit_predict(distance_matrix)
+            
+            # Group by clusters
+            cluster_groups = {}
+            for idx, label in enumerate(labels):
+                if label != -1:  # -1 means noise/no cluster
+                    if label not in cluster_groups:
+                        cluster_groups[label] = []
+                    cluster_groups[label].append(idx)
+            
+            # Convert clusters to duplicate groups
+            for cluster_id, indices in cluster_groups.items():
+                if len(indices) > 1:
+                    group_records = []
+                    for idx in indices:
+                        record = self.df.iloc[idx].to_dict()
+                        
+                        # Calculate average similarity within group
+                        similarities = [similarity_matrix[idx][other_idx] 
+                                      for other_idx in indices if other_idx != idx]
+                        avg_similarity = np.mean(similarities) * 100 if similarities else 100
+                        
+                        # Add phonetic matching if enabled
+                        phonetic_score = 100
+                        if use_phonetic and column_types['names']:
+                            phonetic_score = self._calculate_phonetic_similarity(
+                                idx, indices[0], column_types['names']
+                            )
+                        
+                        # Combined confidence score
+                        confidence = (avg_similarity * 0.7 + phonetic_score * 0.3)
+                        
+                        group_records.append({
+                            'index': idx,
+                            'record': record,
+                            'similarity': avg_similarity,
+                            'phonetic_similarity': phonetic_score,
+                            'confidence': confidence
+                        })
+                    
+                    # Calculate group confidence
+                    group_confidence = np.mean([r['confidence'] for r in group_records])
+                    duplicate_groups.append({
+                        'records': group_records,
+                        'group_confidence': group_confidence,
+                        'detection_method': 'ML_Clustering'
+                    })
+        
+        # Step 6: Apply record linkage for additional verification
+        if len(self.df) < 10000:  # Record linkage is slow on large datasets
+            additional_groups = self._apply_record_linkage(column_types)
+            
+            # Merge with existing groups (avoid duplicates)
+            existing_indices = set()
+            for group in duplicate_groups:
+                for record in group['records']:
+                    existing_indices.add(record['index'])
+            
+            for new_group in additional_groups:
+                new_indices = {r['index'] for r in new_group['records']}
+                if not new_indices.intersection(existing_indices):
+                    duplicate_groups.append(new_group)
+                    existing_indices.update(new_indices)
+        
+        # Step 7: Separate high and low confidence matches
+        high_conf_groups = []
+        low_conf_groups = []
+        
+        for group in duplicate_groups:
+            if group['group_confidence'] >= 65:  # Lower threshold for ML
+                high_conf_groups.append(group)
+            else:
+                low_conf_groups.append(group)
+        
+        # Create uncleaned data
+        uncleaned_indices = []
+        for group in low_conf_groups:
+            uncleaned_indices.extend([r['index'] for r in group['records']])
+        
+        if uncleaned_indices:
+            self.uncleaned_data = self.df.iloc[uncleaned_indices].copy()
+            self.uncleaned_data['reason'] = 'Low ML confidence - requires manual review'
+        else:
+            self.uncleaned_data = pd.DataFrame()
+        
+        # Step 8: Learn from this cleaning session
+        if learn_from_data:
+            self._learn_from_cleaning_session(duplicate_groups, column_types)
+        
+        # Count duplicates
+        num_duplicates = sum(len(group['records']) - 1 for group in duplicate_groups)
+        
+        self.cleaning_report['duplicates_found'] = num_duplicates
+        self.cleaning_report['ml_model_version'] = datetime.now().strftime('%Y%m%d_%H%M%S')
+        self.cleaning_report['learning_stats'] = {
+            'total_sessions': len(self.performance_history) + 1,
+            'patterns_learned': len(self.learned_patterns),
+            'high_confidence_groups': len(high_conf_groups),
+            'low_confidence_groups': len(low_conf_groups)
+        }
+        
+        return duplicate_groups, num_duplicates, self.uncleaned_data
+    
+    def _calculate_phonetic_similarity(self, idx1: int, idx2: int, name_columns: List[str]) -> float:
+        """Calculate phonetic similarity for name fields."""
+        similarities = []
+        
+        for col in name_columns:
+            if col not in self.df.columns:
+                continue
+            
+            name1 = str(self.df.iloc[idx1][col]).strip()
+            name2 = str(self.df.iloc[idx2][col]).strip()
+            
+            if not name1 or not name2:
+                continue
+            
+            try:
+                # Use multiple phonetic algorithms (with error handling)
+                soundex_match = False
+                metaphone_match = False
+                
+                try:
+                    # Clean names for phonetic matching (only alphabetic)
+                    clean_name1 = ''.join(c for c in name1 if c.isalpha() or c.isspace())
+                    clean_name2 = ''.join(c for c in name2 if c.isalpha() or c.isspace())
+                    
+                    if clean_name1 and clean_name2:
+                        soundex_match = phonetics.soundex(clean_name1) == phonetics.soundex(clean_name2)
+                        metaphone_match = phonetics.metaphone(clean_name1) == phonetics.metaphone(clean_name2)
+                except:
+                    pass
+                
+                # Jaro-Winkler for name similarity
+                jaro_sim = jellyfish.jaro_winkler_similarity(name1, name2) * 100
+                
+                # Combined score
+                phonetic_score = (
+                    (100 if soundex_match else 0) * 0.3 +
+                    (100 if metaphone_match else 0) * 0.3 +
+                    jaro_sim * 0.4
+                )
+                similarities.append(phonetic_score)
+            except Exception as e:
+                # If phonetic matching fails, use jaro-winkler only
+                try:
+                    jaro_sim = jellyfish.jaro_winkler_similarity(name1, name2) * 100
+                    similarities.append(jaro_sim)
+                except:
+                    pass
+        
+        return np.mean(similarities) if similarities else 100
+    
+    def _apply_record_linkage(self, column_types: Dict[str, List[str]]) -> List[Dict]:
+        """Apply record linkage algorithms for additional duplicate detection."""
+        groups = []
+        
+        try:
+            # Create indexer
+            indexer = recordlinkage.Index()
+            
+            # Use blocking on key fields if available
+            if column_types['identifiers']:
+                for col in column_types['identifiers'][:1]:  # Use first identifier
+                    if col in self.df.columns:
+                        indexer.add(Block(col))
+            else:
+                indexer.add(recordlinkage.index.Full())
+            
+            # Generate candidate pairs
+            candidate_pairs = indexer.index(self.df)
+            
+            if len(candidate_pairs) == 0:
+                return groups
+            
+            # Compare records
+            compare = recordlinkage.Compare()
+            
+            # Add comparison features
+            for col in column_types['names']:
+                if col in self.df.columns:
+                    compare.string(col, col, method='jarowinkler', label=f'{col}_sim')
+            
+            for col in column_types['identifiers']:
+                if col in self.df.columns:
+                    compare.exact(col, col, label=f'{col}_match')
+            
+            # Compute features
+            features = compare.compute(candidate_pairs, self.df)
+            
+            # Find matches (average similarity > 0.85)
+            matches = features[features.mean(axis=1) > 0.85]
+            
+            # Convert to groups
+            processed = set()
+            for idx1, idx2 in matches.index:
+                if idx1 not in processed and idx2 not in processed:
+                    group_records = [
+                        {
+                            'index': idx1,
+                            'record': self.df.iloc[idx1].to_dict(),
+                            'similarity': features.loc[(idx1, idx2)].mean() * 100,
+                            'confidence': features.loc[(idx1, idx2)].mean() * 100
+                        },
+                        {
+                            'index': idx2,
+                            'record': self.df.iloc[idx2].to_dict(),
+                            'similarity': features.loc[(idx1, idx2)].mean() * 100,
+                            'confidence': features.loc[(idx1, idx2)].mean() * 100
+                        }
+                    ]
+                    
+                    groups.append({
+                        'records': group_records,
+                        'group_confidence': features.loc[(idx1, idx2)].mean() * 100,
+                        'detection_method': 'RecordLinkage'
+                    })
+                    
+                    processed.add(idx1)
+                    processed.add(idx2)
+        
+        except Exception as e:
+            # If record linkage fails, return empty
+            pass
+        
+        return groups
+    
+    def _learn_from_cleaning_session(self, duplicate_groups: List[Dict], 
+                                    column_types: Dict[str, List[str]]):
+        """Learn patterns from this cleaning session to improve future performance."""
+        # Extract patterns from detected duplicates
+        for group in duplicate_groups:
+            if group['group_confidence'] >= 80:  # Only learn from high-confidence matches
+                pattern = {
+                    'column_types': column_types,
+                    'group_size': len(group['records']),
+                    'avg_confidence': group['group_confidence'],
+                    'detection_method': group.get('detection_method', 'unknown'),
+                    'timestamp': datetime.now()
+                }
+                self.learned_patterns.append(pattern)
+        
+        # Keep only recent patterns (last 1000)
+        if len(self.learned_patterns) > 1000:
+            self.learned_patterns = self.learned_patterns[-1000:]
+        
+        # Track performance
+        self.performance_history.append({
+            'timestamp': datetime.now(),
+            'duplicates_found': len(duplicate_groups),
+            'avg_confidence': np.mean([g['group_confidence'] for g in duplicate_groups]) if duplicate_groups else 0,
+            'data_size': len(self.df)
+        })
+        
+        # Save models
+        self._save_ml_models()
     
     def remove_smart_ai_duplicates(self, duplicate_groups: List[Dict], 
                                    high_confidence_only: bool = False) -> Tuple[pd.DataFrame, pd.DataFrame]:

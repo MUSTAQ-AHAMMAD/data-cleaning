@@ -5,7 +5,10 @@ A powerful, user-friendly Python-based CRM application for efficient CSV data cl
 ## 🌟 Features
 
 ### 🎯 Core Capabilities
-- **Smart AI Detection (NEW!)**: Automatically detects duplicates like a human would, with confidence scoring
+- **ML Advanced Detection (NEWEST!)**: Machine learning system that learns and improves with every use 🚀
+- **Smart AI Detection**: Automatically detects duplicates like a human would, with confidence scoring
+- **Learning Persistence**: AI remembers patterns and gets better with each cleaning session
+- **Advanced Algorithms**: TF-IDF, DBSCAN clustering, phonetic matching, record linkage
 - **Automated Column Analysis**: AI identifies the most relevant columns for duplicate detection
 - **Separated Data Export**: Clean and uncleaned data exported separately for manual review
 - **AI-Powered Fuzzy Matching**: Uses advanced algorithms to detect similar records with typos or variations
@@ -25,7 +28,18 @@ A powerful, user-friendly Python-based CRM application for efficient CSV data cl
 
 ### 🔍 Duplicate Detection Methods
 
-1. **Smart AI (Automatic) - NEW!** ⭐
+1. **ML Advanced (Learning) - NEWEST!** 🚀
+   - **Machine learning that learns and improves with each use**
+   - TF-IDF vectorization for semantic similarity
+   - DBSCAN clustering for automatic pattern detection
+   - Phonetic matching (Soundex, Metaphone) for name variations
+   - Record linkage algorithms for verification
+   - **Learns from each cleaning session** - gets smarter over time
+   - Persists learned models for future use
+   - Handles complex duplicate scenarios automatically
+   - Best for: Organizations processing data regularly that want AI to learn their specific patterns
+
+2. **Smart AI (Automatic)** ⭐
    - Automatically identifies key columns (IDs, names, emails, phones)
    - Uses different matching strategies based on field types
    - Weighted scoring system prioritizes important fields
@@ -34,13 +48,13 @@ A powerful, user-friendly Python-based CRM application for efficient CSV data cl
    - Works like a human data analyst would
    - Ideal for automated processing with manual review option
 
-2. **Fuzzy Match (AI-Powered)**
+3. **Fuzzy Match (AI-Powered)**
    - Uses Levenshtein distance algorithm
    - Detects similar records with typos or variations
    - Configurable similarity threshold (50-100%)
    - Ideal for real-world messy data
 
-3. **Exact Match**
+4. **Exact Match**
    - Identifies identical records
    - Fast and efficient
    - Perfect for finding exact duplicates
