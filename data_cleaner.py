@@ -558,6 +558,21 @@ class DataCleaner:
         if self.df is None:
             raise ValueError("No data loaded. Please load a CSV file first.")
         
+        # Check for extremely large datasets to prevent memory errors
+        n_rows = len(self.df)
+        MAX_ML_ADVANCED_ROWS = 50000
+        FULL_MATRIX_THRESHOLD = 5000
+        
+        if n_rows > MAX_ML_ADVANCED_ROWS:
+            raise ValueError(
+                f"Dataset too large ({n_rows:,} rows) for ML Advanced detection.\n\n"
+                "ML Advanced clustering requires significant memory for large datasets.\n\n"
+                "Recommendations:\n"
+                "1. Use 'Smart AI (Automatic)' detection which is optimized for large datasets\n"
+                "2. Use 'Exact Match' or 'Fuzzy Match' for faster processing\n"
+                f"3. Filter/sample your data to under {MAX_ML_ADVANCED_ROWS:,} rows before using ML Advanced"
+            )
+        
         # Check if ML dependencies are available
         if not ML_AVAILABLE:
             raise ImportError(
@@ -615,19 +630,62 @@ class DataCleaner:
                 )
                 tfidf_matrix = self.tfidf_vectorizer.fit_transform(cleaned_texts)
         
-        # Step 4: Calculate similarity matrix
-        similarity_matrix = cosine_similarity(tfidf_matrix)
+        # Step 4: Calculate similarity matrix with memory optimization
+        # For large datasets, avoid creating full dense matrix
+        n_samples = tfidf_matrix.shape[0]
         
         # Step 5: Use DBSCAN clustering for pattern detection
         duplicate_groups = []
         
-        if use_clustering:
+        if use_clustering and n_samples < FULL_MATRIX_THRESHOLD:
+            # Only use full similarity matrix for smaller datasets
+            similarity_matrix = cosine_similarity(tfidf_matrix)
             # Convert similarity to distance (ensure non-negative)
             distance_matrix = np.clip(1 - similarity_matrix, 0, None)
             
             # Apply DBSCAN clustering
             clustering = DBSCAN(eps=0.25, min_samples=2, metric='precomputed')
             labels = clustering.fit_predict(distance_matrix)
+        elif use_clustering:
+            # For large datasets, work with sparse matrices directly
+            # Use a simpler threshold-based approach to avoid memory issues
+            similarity_matrix = None
+            labels = np.full(n_samples, -1)  # Initialize all as noise
+            
+            # Find similar pairs using sparse matrix operations
+            # This is more memory efficient than full DBSCAN
+            from scipy.sparse import csr_matrix
+            from sklearn.metrics.pairwise import cosine_similarity
+            
+            # Process in chunks to find similar items
+            chunk_size = 1000
+            threshold = 0.75  # 75% similarity threshold
+            
+            for i in range(0, n_samples, chunk_size):
+                end_i = min(i + chunk_size, n_samples)
+                chunk_similarities = cosine_similarity(
+                    tfidf_matrix[i:end_i], 
+                    tfidf_matrix
+                )
+                
+                # Find pairs above threshold
+                for local_idx in range(chunk_similarities.shape[0]):
+                    global_idx = i + local_idx
+                    similar_indices = np.where(chunk_similarities[local_idx] >= threshold)[0]
+                    
+                    if len(similar_indices) > 1:  # Has duplicates
+                        # Assign same label to similar items
+                        existing_labels = labels[similar_indices]
+                        valid_labels = existing_labels[existing_labels != -1]
+                        
+                        if len(valid_labels) > 0:
+                            # Use existing label
+                            label = valid_labels[0]
+                        else:
+                            # Create new label
+                            label = global_idx
+                        
+                        labels[similar_indices] = label
             
             # Group by clusters
             cluster_groups = {}
@@ -645,9 +703,17 @@ class DataCleaner:
                         record = self.df.iloc[idx].to_dict()
                         
                         # Calculate average similarity within group
-                        similarities = [similarity_matrix[idx][other_idx] 
-                                      for other_idx in indices if other_idx != idx]
-                        avg_similarity = np.mean(similarities) * 100 if similarities else 100
+                        if similarity_matrix is not None:
+                            similarities = [similarity_matrix[idx][other_idx] 
+                                          for other_idx in indices if other_idx != idx]
+                            avg_similarity = np.mean(similarities) * 100 if similarities else 100
+                        else:
+                            # For large datasets, calculate similarity on-the-fly for the group only
+                            group_vectors = tfidf_matrix[indices]
+                            local_sim = cosine_similarity(group_vectors)
+                            idx_pos = indices.index(idx)
+                            similarities = [local_sim[idx_pos][i] for i in range(len(indices)) if i != idx_pos]
+                            avg_similarity = np.mean(similarities) * 100 if similarities else 100
                         
                         # Add phonetic matching if enabled
                         phonetic_score = 100
