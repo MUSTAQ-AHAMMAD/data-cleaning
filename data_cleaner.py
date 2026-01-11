@@ -201,9 +201,10 @@ class DataCleaner:
         return phone
     
     def load_csv(self, file_path: str, encoding: str = 'utf-8') -> pd.DataFrame:
-        """Load CSV file into a pandas DataFrame."""
+        """Load CSV file into a pandas DataFrame with optimizations for large files."""
         try:
-            self.df = pd.read_csv(file_path, encoding=encoding)
+            # Optimize for large files with low_memory mode
+            self.df = pd.read_csv(file_path, encoding=encoding, low_memory=False)
             self.original_df = self.df.copy()
             self.cleaning_report['total_records'] = len(self.df)
             self.cleaning_report['timestamp'] = datetime.now()
@@ -212,7 +213,7 @@ class DataCleaner:
             # Try different encodings
             for enc in ['latin-1', 'iso-8859-1', 'cp1252']:
                 try:
-                    self.df = pd.read_csv(file_path, encoding=enc)
+                    self.df = pd.read_csv(file_path, encoding=enc, low_memory=False)
                     self.original_df = self.df.copy()
                     self.cleaning_report['total_records'] = len(self.df)
                     self.cleaning_report['timestamp'] = datetime.now()
@@ -256,7 +257,7 @@ class DataCleaner:
     
     def detect_duplicates_fuzzy(self, columns: List[str], threshold: int = 85) -> Tuple[List[Dict], int]:
         """
-        Detect fuzzy duplicates using Levenshtein distance.
+        Detect fuzzy duplicates using Levenshtein distance with optimizations for large datasets.
         Returns potential duplicate groups based on similarity threshold.
         
         Args:
@@ -274,16 +275,42 @@ class DataCleaner:
         
         # Convert dataframe to list for faster iteration
         df_records = self.df.to_dict('records')
+        n_records = len(df_records)
         
-        for i in range(len(df_records)):
+        # For large datasets, use blocking strategy to reduce comparisons
+        # Create blocks based on first characters of key columns to reduce search space
+        use_blocking = n_records > 5000
+        blocks = {}
+        
+        if use_blocking:
+            # Create blocking keys using first 2 characters of first column
+            for i, record in enumerate(df_records):
+                if columns:
+                    # Use first column for blocking
+                    val = str(record.get(columns[0], '')).strip().lower()
+                    # Create block key from first 2 chars or length
+                    block_key = val[:2] if len(val) >= 2 else val
+                    if block_key not in blocks:
+                        blocks[block_key] = []
+                    blocks[block_key].append(i)
+        
+        for i in range(n_records):
             if i in checked_indices:
                 continue
             
             current_record = df_records[i]
             similar_records = [{'index': i, 'record': current_record}]
             
-            for j in range(i + 1, len(df_records)):
-                if j in checked_indices:
+            # Determine comparison range based on blocking
+            if use_blocking and columns:
+                val = str(current_record.get(columns[0], '')).strip().lower()
+                block_key = val[:2] if len(val) >= 2 else val
+                comparison_indices = blocks.get(block_key, [i])
+            else:
+                comparison_indices = range(i + 1, n_records)
+            
+            for j in comparison_indices:
+                if j == i or j in checked_indices:  # Skip self and already checked
                     continue
                 
                 compare_record = df_records[j]
@@ -297,7 +324,8 @@ class DataCleaner:
                     val2 = str(compare_record.get(col, '')).strip().lower()
                     
                     if val1 and val2:
-                        similarity = fuzz.ratio(val1, val2)
+                        # Use rapidfuzz for better performance
+                        similarity = rapid_fuzz.ratio(val1, val2)
                         total_similarity += similarity
                         valid_comparisons += 1
                 
@@ -482,16 +510,59 @@ class DataCleaner:
         confidence_scores = []
         
         df_records = self.df.to_dict('records')
+        n_records = len(df_records)
         
-        for i in range(len(df_records)):
+        # For large datasets (>5000 records), use blocking to reduce comparisons
+        use_blocking = n_records > 5000
+        blocks = {}
+        
+        if use_blocking and analyze_columns:
+            # Create blocks using first identifier or name column
+            blocking_col = None
+            if column_types['identifiers']:
+                blocking_col = column_types['identifiers'][0]
+            elif column_types['names']:
+                blocking_col = column_types['names'][0]
+            elif analyze_columns:
+                blocking_col = analyze_columns[0]
+            
+            if blocking_col:
+                for i, record in enumerate(df_records):
+                    val = str(record.get(blocking_col, '')).strip().lower()
+                    # Create block key from first 3 characters or full if shorter
+                    block_key = val[:3] if len(val) >= 3 else val
+                    if block_key not in blocks:
+                        blocks[block_key] = []
+                    blocks[block_key].append(i)
+        
+        for i in range(n_records):
             if i in checked_indices:
                 continue
             
             current_record = df_records[i]
             similar_records = [{'index': i, 'record': current_record, 'confidence': 100.0}]
             
-            for j in range(i + 1, len(df_records)):
-                if j in checked_indices:
+            # Determine comparison range based on blocking
+            if use_blocking and blocks:
+                blocking_col = None
+                if column_types['identifiers']:
+                    blocking_col = column_types['identifiers'][0]
+                elif column_types['names']:
+                    blocking_col = column_types['names'][0]
+                elif analyze_columns:
+                    blocking_col = analyze_columns[0]
+                
+                if blocking_col:
+                    val = str(current_record.get(blocking_col, '')).strip().lower()
+                    block_key = val[:3] if len(val) >= 3 else val
+                    comparison_indices = blocks.get(block_key, [i])
+                else:
+                    comparison_indices = range(i + 1, n_records)
+            else:
+                comparison_indices = range(i + 1, n_records)
+            
+            for j in comparison_indices:
+                if j == i or j in checked_indices:  # Skip self and already checked
                     continue
                 
                 compare_record = df_records[j]

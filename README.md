@@ -2,6 +2,8 @@
 
 A powerful, user-friendly Python-based CRM application for efficient CSV data cleaning with advanced AI-powered duplicate detection that works like a human analyst.
 
+**⚡ Now Optimized for Large Datasets!** Handles 20k+ records efficiently with smart blocking and optimized algorithms.
+
 ## 🌟 Features
 
 ### 🎯 Core Capabilities
@@ -17,14 +19,16 @@ A powerful, user-friendly Python-based CRM application for efficient CSV data cl
 - **Missing Value Handling**: Multiple strategies for handling missing data
 - **Data Standardization**: Normalize text data (lowercase, uppercase, title case, trim)
 - **Real-time Reporting**: Comprehensive analytics and insights with confidence scores
+- **⚡ Performance Optimized**: Handles large datasets (20k+ records) with blocking algorithms and smart caching
 
 ### 📊 User Interface
 - **Web-Based Dashboard**: Built with Streamlit for easy access
 - **Interactive Data Preview**: View and analyze your data before cleaning
 - **Visual Analytics**: Charts and graphs showing data quality metrics
 - **Multi-Format Export**: Export cleaned data as CSV or Excel
-- **Progress Tracking**: Real-time updates on cleaning operations
+- **Progress Tracking**: Real-time updates on cleaning operations with time estimates
 - **Confidence Indicators**: Visual indicators for high/low confidence matches
+- **Performance Warnings**: Smart recommendations for large datasets
 
 ### 🔍 Duplicate Detection Methods
 
@@ -47,6 +51,7 @@ A powerful, user-friendly Python-based CRM application for efficient CSV data cl
    - Confidence scoring for each match
    - Separates high-confidence from low-confidence matches
    - Works like a human data analyst would
+   - **Optimized with blocking for datasets >5k records**
    - Ideal for automated processing with manual review option
    - **Works with core installation** - no extra dependencies needed
 
@@ -54,12 +59,24 @@ A powerful, user-friendly Python-based CRM application for efficient CSV data cl
    - Uses Levenshtein distance algorithm
    - Detects similar records with typos or variations
    - Configurable similarity threshold (50-100%)
+   - **Optimized with blocking for datasets >5k records**
    - Ideal for real-world messy data
 
 4. **Exact Match**
    - Identifies identical records
-   - Fast and efficient
+   - Fast and efficient - works great with large datasets
    - Perfect for finding exact duplicates
+
+## ⚡ Performance
+
+This application is optimized to handle large datasets efficiently:
+
+- **20k records**: Upload and analyze in seconds
+- **Blocking algorithms**: Reduces duplicate detection complexity from O(n²) to ~O(n)
+- **Smart caching**: Reuses calculations to avoid redundant processing
+- **Progress indicators**: Clear feedback with time estimates for long operations
+
+See [PERFORMANCE.md](PERFORMANCE.md) for detailed benchmarks and optimization details.
 
 ## 🚀 Quick Start
 

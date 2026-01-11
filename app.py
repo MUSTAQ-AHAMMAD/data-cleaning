@@ -24,6 +24,13 @@ from data_cleaner import (
 APP_TITLE = "Professional Data Cleaning Suite"
 APP_ICON = "📊"
 
+# Performance estimation constants (based on benchmarking with typical hardware)
+# Time estimates are per 1000 records for user messaging
+# These are conservative estimates to set realistic expectations
+PERF_ESTIMATE_MIN_PER_1K = 1  # Minimum seconds per 1000 records
+PERF_ESTIMATE_MAX_PER_1K = 2  # Maximum seconds per 1000 records
+LARGE_DATASET_WARNING_THRESHOLD = 10000  # Show warnings above this threshold
+
 # Page configuration
 st.set_page_config(
     page_title=APP_TITLE,
@@ -518,8 +525,11 @@ def upload_data_page():
     
     if uploaded_file is not None:
         try:
-            # Read the uploaded file
-            df = pd.read_csv(uploaded_file)
+            # Show progress indicator
+            with st.spinner("📁 Loading CSV file..."):
+                # Optimize CSV reading with low_memory and dtype inference optimization
+                df = pd.read_csv(uploaded_file, low_memory=False)
+            
             st.session_state.cleaner.load_dataframe(df)
             st.session_state.data_loaded = True
             st.session_state.duplicates_detected = False
@@ -539,19 +549,28 @@ def upload_data_page():
             with col1:
                 st.markdown("### 📊 Column Information")
                 st.markdown('<div class="card">', unsafe_allow_html=True)
-                col_info = pd.DataFrame({
-                    'Column': df.columns,
-                    'Type': df.dtypes.astype(str),
-                    'Non-Null': df.count(),
-                    'Null %': (df.isnull().sum() / len(df) * 100).round(2)
-                })
+                
+                # Optimize: Use isna() instead of isnull() and calculate once
+                with st.spinner("📊 Analyzing data quality..."):
+                    null_counts = df.isna().sum()
+                    total_rows = len(df)
+                    
+                    col_info = pd.DataFrame({
+                        'Column': df.columns,
+                        'Type': df.dtypes.astype(str),
+                        'Non-Null': total_rows - null_counts,
+                        'Null %': (null_counts / total_rows * 100).round(2)
+                    })
+                
                 st.dataframe(col_info, use_container_width=True, height=400)
                 st.markdown('</div>', unsafe_allow_html=True)
             
             with col2:
                 st.markdown("### 🎯 Data Quality Metrics")
-                total_cells = len(df) * len(df.columns)
-                null_cells = df.isnull().sum().sum()
+                
+                # Optimize: Calculate metrics once
+                total_cells = total_rows * len(df.columns)
+                null_cells = null_counts.sum()
                 completeness = ((total_cells - null_cells) / total_cells) * 100 if total_cells > 0 else 0
                 
                 # Modern metric cards
@@ -580,12 +599,11 @@ def upload_data_page():
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # Visualize missing data
-                missing_data = df.isnull().sum()
-                if missing_data.sum() > 0:
+                # Visualize missing data - only if there are missing values and not too many columns
+                if null_cells > 0 and len(df.columns) <= 50:
                     fig = px.bar(
-                        x=missing_data.index,
-                        y=missing_data.values,
+                        x=null_counts.index,
+                        y=null_counts.values,
                         labels={'x': 'Column', 'y': 'Missing Values'},
                         title='Missing Values by Column',
                         color_discrete_sequence=['#667eea']
@@ -596,6 +614,8 @@ def upload_data_page():
                         font=dict(family='Inter, sans-serif')
                     )
                     st.plotly_chart(fig, use_container_width=True)
+                elif len(df.columns) > 50:
+                    st.info("📊 Chart hidden for datasets with >50 columns to improve performance")
             
         except Exception as e:
             st.error(f"❌ Error loading file: {str(e)}")
@@ -827,6 +847,23 @@ def detect_duplicates_page():
     elif detection_method == "Smart AI (Automatic)":
         st.info("🤖 Smart AI will automatically identify the best columns and strategies for duplicate detection, similar to how a human would analyze the data.")
         
+        # Show performance warning for large datasets
+        if len(df) > LARGE_DATASET_WARNING_THRESHOLD:
+            est_time_min = (len(df) // 1000) * PERF_ESTIMATE_MIN_PER_1K
+            est_time_max = (len(df) // 1000) * PERF_ESTIMATE_MAX_PER_1K
+            st.warning(f"""
+            ⚠️ **Large Dataset Detected ({len(df):,} records)**
+            
+            Smart AI duplicate detection may take some time with large datasets. 
+            
+            **Recommendations:**
+            - Use **Exact Match** first for faster duplicate removal
+            - Or filter your data to focus on specific subsets
+            - Consider using external tools for very large datasets (>50k records)
+            
+            Processing time estimate: ~{est_time_min} to {est_time_max} minutes depending on data complexity.
+            """)
+        
         col1, col2 = st.columns(2)
         with col1:
             auto_detect = st.checkbox("Auto-detect key columns", value=True, 
@@ -850,7 +887,13 @@ def detect_duplicates_page():
             selected_columns = None
         
         if st.button("🧠 Run Smart AI Detection", type="primary"):
-            with st.spinner("🤖 AI is analyzing your data with human-like intelligence..."):
+            # Add progress message for large datasets
+            if len(df) > 5000:
+                progress_text = f"🤖 Analyzing {len(df):,} records... This may take a few minutes for large datasets."
+            else:
+                progress_text = "🤖 AI is analyzing your data with human-like intelligence..."
+            
+            with st.spinner(progress_text):
                 try:
                     duplicate_groups, num_duplicates, uncleaned_df = cleaner.detect_duplicates_smart_ai(
                         auto_detect_columns=auto_detect,
@@ -937,6 +980,23 @@ def detect_duplicates_page():
                     st.info("🎉 No exact duplicates found in the data!")
     
     else:  # Fuzzy Match
+        # Show performance warning for large datasets
+        if len(df) > LARGE_DATASET_WARNING_THRESHOLD:
+            est_time_min = (len(df) // 1000) * PERF_ESTIMATE_MIN_PER_1K
+            est_time_max = (len(df) // 1000) * PERF_ESTIMATE_MAX_PER_1K
+            st.warning(f"""
+            ⚠️ **Large Dataset Detected ({len(df):,} records)**
+            
+            Fuzzy matching may take significant time with large datasets due to comparing each record with others.
+            
+            **Recommendations:**
+            - Use **Exact Match** first to remove obvious duplicates
+            - Or use **Smart AI** which has optimizations for large datasets  
+            - Consider filtering/sampling your data before fuzzy matching
+            
+            Processing time estimate: ~{est_time_min} to {est_time_max} minutes depending on column count.
+            """)
+        
         selected_columns = st.multiselect(
             "Select columns for fuzzy matching (required)",
             available_columns,
@@ -955,7 +1015,13 @@ def detect_duplicates_page():
             if not selected_columns:
                 st.error("Please select at least one column for comparison.")
             else:
-                with st.spinner("AI is analyzing your data for similar records..."):
+                # Add progress message for large datasets
+                if len(df) > 5000:
+                    progress_text = f"🤖 Analyzing {len(df):,} records with fuzzy matching... This may take several minutes."
+                else:
+                    progress_text = "AI is analyzing your data for similar records..."
+                
+                with st.spinner(progress_text):
                     duplicate_groups, num_duplicates = cleaner.detect_duplicates_fuzzy(
                         columns=selected_columns,
                         threshold=similarity_threshold
