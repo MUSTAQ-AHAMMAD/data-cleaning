@@ -75,11 +75,6 @@ st.markdown("""
         color: #ffffff !important;
     }
     
-    /* Override Streamlit's default sidebar text colors */
-    .css-1d391kg, .css-1v3fvcr, .css-10trblm {
-        color: #ffffff !important;
-    }
-    
     /* Navigation items styling */
     section[data-testid="stSidebar"] .stRadio > label {
         background: rgba(255, 255, 255, 0.15) !important;
