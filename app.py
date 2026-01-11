@@ -10,7 +10,13 @@ import plotly.graph_objects as go
 from datetime import datetime
 import io
 import json
-from data_cleaner import DataCleaner, ML_AVAILABLE, ML_IMPORT_ERROR, RECORDLINKAGE_AVAILABLE
+from data_cleaner import (
+    DataCleaner, 
+    ML_AVAILABLE, 
+    ML_IMPORT_ERROR, 
+    RECORDLINKAGE_AVAILABLE,
+    RECORDLINKAGE_IMPORT_ERROR
+)
 
 # Page configuration
 st.set_page_config(
@@ -33,75 +39,109 @@ st.markdown("""
     
     /* Main container */
     .main {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 2rem;
+    }
+    
+    /* Content wrapper for better structure */
+    .block-container {
+        padding: 2rem 3rem;
+        max-width: 1400px;
     }
     
     /* Sidebar styling */
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%);
+        background: linear-gradient(180deg, #2d3e50 0%, #1a252f 100%);
     }
     
     [data-testid="stSidebar"] * {
-        color: white !important;
+        color: #ffffff !important;
     }
     
+    [data-testid="stSidebar"] h2,
+    [data-testid="stSidebar"] h3 {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+    }
+    
+    /* Navigation items styling */
     [data-testid="stSidebar"] .stRadio > label {
-        background: rgba(255, 255, 255, 0.1);
-        padding: 12px;
-        border-radius: 8px;
-        margin: 4px 0;
-        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.15) !important;
+        padding: 14px 16px !important;
+        border-radius: 10px !important;
+        margin: 8px 0 !important;
+        transition: all 0.3s ease !important;
+        border-left: 4px solid transparent !important;
+        font-weight: 600 !important;
+        font-size: 1.05rem !important;
     }
     
     [data-testid="stSidebar"] .stRadio > label:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: translateX(5px);
+        background: rgba(255, 255, 255, 0.25) !important;
+        transform: translateX(8px) !important;
+        border-left: 4px solid #667eea !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+    }
+    
+    /* Active navigation item */
+    [data-testid="stSidebar"] .stRadio > label[data-checked="true"] {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border-left: 4px solid #ffd700 !important;
+        font-weight: 700 !important;
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.5) !important;
     }
     
     /* Header styles */
     .main-header {
-        font-size: 2.8rem;
-        font-weight: 700;
+        font-size: 3rem;
+        font-weight: 800;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+        background-clip: text;
         text-align: center;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
         letter-spacing: -1px;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
     }
     
     .sub-header {
-        font-size: 1.8rem;
-        font-weight: 600;
-        color: #2d3748;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1a202c;
         margin-top: 2rem;
         margin-bottom: 1.5rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 3px solid #667eea;
-        display: inline-block;
+        padding: 1rem 1.5rem;
+        background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+        border-left: 5px solid #667eea;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
     
     .subtitle {
         text-align: center;
-        color: #4a5568;
-        font-size: 1.1rem;
-        margin-bottom: 2rem;
-        font-weight: 400;
+        color: #2d3748;
+        font-size: 1.2rem;
+        margin-bottom: 3rem;
+        font-weight: 500;
+        line-height: 1.6;
     }
     
     /* Card styles */
     .card {
         background: white;
-        border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
-        margin: 1rem 0;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        margin: 1.5rem 0;
         transition: all 0.3s ease;
+        border: 1px solid rgba(102, 126, 234, 0.1);
     }
     
     .card:hover {
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        transform: translateY(-4px);
+        border-color: rgba(102, 126, 234, 0.3);
     }
     
     /* Metric cards */
@@ -127,51 +167,93 @@ st.markdown("""
         letter-spacing: 1px;
     }
     
-    /* Alert boxes */
+    /* Alert boxes with better visibility */
     .stAlert {
         border-radius: 12px;
-        border: none;
-        padding: 1rem 1.5rem;
+        border: 2px solid;
+        padding: 1.2rem 1.5rem;
+        font-weight: 500;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     
-    /* Success styling */
-    [data-baseweb="notification"] [kind="success"] {
-        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-        color: white;
+    /* Info alerts */
+    div[data-baseweb="notification"][kind="info"] {
+        background-color: #e3f2fd !important;
+        border-color: #2196f3 !important;
+        color: #0d47a1 !important;
     }
     
-    /* Info styling */
-    [data-baseweb="notification"] [kind="info"] {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        color: white;
+    div[data-baseweb="notification"][kind="info"] * {
+        color: #0d47a1 !important;
     }
     
-    /* Warning styling */
-    [data-baseweb="notification"] [kind="warning"] {
-        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-        color: white;
+    /* Success alerts */
+    div[data-baseweb="notification"][kind="success"] {
+        background-color: #e8f5e9 !important;
+        border-color: #4caf50 !important;
+        color: #1b5e20 !important;
+    }
+    
+    div[data-baseweb="notification"][kind="success"] * {
+        color: #1b5e20 !important;
+    }
+    
+    /* Warning alerts */
+    div[data-baseweb="notification"][kind="warning"] {
+        background-color: #fff3e0 !important;
+        border-color: #ff9800 !important;
+        color: #e65100 !important;
+    }
+    
+    div[data-baseweb="notification"][kind="warning"] * {
+        color: #e65100 !important;
+    }
+    
+    /* Error alerts */
+    div[data-baseweb="notification"][kind="error"] {
+        background-color: #ffebee !important;
+        border-color: #f44336 !important;
+        color: #b71c1c !important;
+    }
+    
+    div[data-baseweb="notification"][kind="error"] * {
+        color: #b71c1c !important;
     }
     
     /* Button styling */
     .stButton > button {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        color: white !important;
         border: none;
-        border-radius: 8px;
-        padding: 0.6rem 2rem;
-        font-weight: 600;
+        border-radius: 10px;
+        padding: 0.75rem 2.5rem;
+        font-weight: 700;
+        font-size: 1.05rem;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
     
     .stButton > button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+    
+    .stButton > button:active {
+        transform: translateY(-1px);
     }
     
     /* Primary button */
     .stButton > button[kind="primary"] {
         background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+    }
+    
+    .stButton > button[kind="primary"]:hover {
+        background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+        box-shadow: 0 8px 25px rgba(245, 87, 108, 0.5);
     }
     
     /* Input fields */
@@ -319,14 +401,30 @@ def main():
         st.markdown('<div class="main-header">🧹 AI CRM - Data Cleaning System</div>', unsafe_allow_html=True)
         st.markdown('<p class="subtitle">Efficiently clean your CSV data and remove duplicate users with AI-powered detection</p>', unsafe_allow_html=True)
     
-    # Sidebar with modern styling
+    # Sidebar with modern styling and step indicators
     with st.sidebar:
         st.markdown("## 🧹 AI CRM")
         st.markdown("---")
-        st.markdown("### 📍 Navigation")
+        st.markdown("### 📍 Step-by-Step Process")
+        
+        # Determine current step status
+        step_status = {
+            "Upload": "✅" if st.session_state.data_loaded else "1️⃣",
+            "Detect": "✅" if st.session_state.duplicates_detected else ("2️⃣" if st.session_state.data_loaded else "⏸️"),
+            "Clean": "✅" if st.session_state.cleaning_complete else ("3️⃣" if st.session_state.duplicates_detected else "⏸️"),
+            "Report": "4️⃣" if st.session_state.data_loaded else "⏸️",
+            "Export": "5️⃣" if st.session_state.data_loaded else "⏸️"
+        }
+        
         page = st.radio(
             "Select Page",
-            ["📤 Upload Data", "🔍 Detect Duplicates", "🧹 Clean Data", "📊 Reports & Analytics", "⬇️ Export Data"],
+            [
+                f"{step_status['Upload']} Upload Data",
+                f"{step_status['Detect']} Detect Duplicates",
+                f"{step_status['Clean']} Clean Data",
+                f"{step_status['Report']} Reports & Analytics",
+                f"{step_status['Export']} Export Data"
+            ],
             label_visibility="collapsed"
         )
         
@@ -334,32 +432,63 @@ def main():
         st.markdown("### 📊 Quick Stats")
         if st.session_state.data_loaded:
             summary = st.session_state.cleaner.get_data_summary()
-            col1, col2 = st.columns(2)
-            with col1:
-                st.metric("Records", f"{summary.get('total_rows', 0):,}")
-            with col2:
-                st.metric("Columns", summary.get('total_columns', 0))
+            
+            # Better styled metrics in sidebar
+            st.markdown(f"""
+            <div style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 10px; margin-bottom: 0.5rem;">
+                <div style="color: #ffd700; font-size: 0.85rem; font-weight: 600;">TOTAL RECORDS</div>
+                <div style="color: #ffffff; font-size: 1.8rem; font-weight: 700;">{summary.get('total_rows', 0):,}</div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown(f"""
+            <div style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 10px; margin-bottom: 0.5rem;">
+                <div style="color: #ffd700; font-size: 0.85rem; font-weight: 600;">COLUMNS</div>
+                <div style="color: #ffffff; font-size: 1.8rem; font-weight: 700;">{summary.get('total_columns', 0)}</div>
+            </div>
+            """, unsafe_allow_html=True)
+            
             if st.session_state.duplicates_detected:
                 report = st.session_state.cleaner.get_cleaning_report()
-                st.metric("Duplicates", report.get('duplicates_found', 0), delta=None)
+                st.markdown(f"""
+                <div style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 10px;">
+                    <div style="color: #ffd700; font-size: 0.85rem; font-weight: 600;">DUPLICATES FOUND</div>
+                    <div style="color: #ff6b6b; font-size: 1.8rem; font-weight: 700;">{report.get('duplicates_found', 0)}</div>
+                </div>
+                """, unsafe_allow_html=True)
         else:
-            st.info("💡 No data loaded yet")
+            st.markdown("""
+            <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 10px; text-align: center;">
+                <div style="color: #ffffff; font-size: 0.95rem;">💡 No data loaded yet</div>
+                <div style="color: rgba(255,255,255,0.7); font-size: 0.85rem; margin-top: 0.5rem;">Upload data to see stats</div>
+            </div>
+            """, unsafe_allow_html=True)
     
     # Main content based on selected page
-    if page == "📤 Upload Data":
+    if "Upload Data" in page:
         upload_data_page()
-    elif page == "🔍 Detect Duplicates":
+    elif "Detect Duplicates" in page:
         detect_duplicates_page()
-    elif page == "🧹 Clean Data":
+    elif "Clean Data" in page:
         clean_data_page()
-    elif page == "📊 Reports & Analytics":
+    elif "Reports & Analytics" in page:
         reports_page()
-    elif page == "⬇️ Export Data":
+    elif "Export Data" in page:
         export_data_page()
 
 def upload_data_page():
     """Page for uploading CSV data."""
-    st.markdown('<div class="sub-header">📤 Upload Your Data</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sub-header">📤 Step 1: Upload Your Data</div>', unsafe_allow_html=True)
+    
+    # Progress indicator
+    st.markdown("""
+    <div class="card" style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); border-left: 5px solid #667eea;">
+        <h4 style="color: #667eea; margin: 0 0 0.5rem 0;">🎯 Current Step: Data Upload</h4>
+        <p style="color: #2d3748; margin: 0; font-size: 1rem;">
+            <strong>What to do:</strong> Upload your CSV file or generate sample data to begin the cleaning process.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
     st.markdown("""
     <div class="card">
@@ -469,11 +598,28 @@ def upload_data_page():
 
 def detect_duplicates_page():
     """Page for detecting duplicates."""
-    st.markdown('<div class="sub-header">🔍 Detect Duplicates</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sub-header">🔍 Step 2: Detect Duplicates</div>', unsafe_allow_html=True)
     
     if not st.session_state.data_loaded:
-        st.warning("⚠️ Please upload data first from the 'Upload Data' page.")
+        st.markdown("""
+        <div class="card" style="background: #fff3e0; border-left: 5px solid #ff9800;">
+            <h4 style="color: #e65100; margin: 0 0 0.5rem 0;">⚠️ Data Required</h4>
+            <p style="color: #e65100; margin: 0; font-size: 1rem;">
+                Please upload data first from <strong>Step 1: Upload Data</strong> page.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
         return
+    
+    # Progress indicator
+    st.markdown("""
+    <div class="card" style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); border-left: 5px solid #667eea;">
+        <h4 style="color: #667eea; margin: 0 0 0.5rem 0;">🎯 Current Step: Duplicate Detection</h4>
+        <p style="color: #2d3748; margin: 0; font-size: 1rem;">
+            <strong>What to do:</strong> Choose a detection method and configure parameters to find duplicate records.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
     cleaner = st.session_state.cleaner
     df = cleaner.df
@@ -796,11 +942,28 @@ def detect_duplicates_page():
 
 def clean_data_page():
     """Page for cleaning data."""
-    st.markdown('<div class="sub-header">🧹 Clean Your Data</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sub-header">🧹 Step 3: Clean Your Data</div>', unsafe_allow_html=True)
     
     if not st.session_state.data_loaded:
-        st.warning("⚠️ Please upload data first from the 'Upload Data' page.")
+        st.markdown("""
+        <div class="card" style="background: #fff3e0; border-left: 5px solid #ff9800;">
+            <h4 style="color: #e65100; margin: 0 0 0.5rem 0;">⚠️ Data Required</h4>
+            <p style="color: #e65100; margin: 0; font-size: 1rem;">
+                Please upload data first from <strong>Step 1: Upload Data</strong> page.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
         return
+    
+    # Progress indicator
+    st.markdown("""
+    <div class="card" style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); border-left: 5px solid #667eea;">
+        <h4 style="color: #667eea; margin: 0 0 0.5rem 0;">🎯 Current Step: Data Cleaning</h4>
+        <p style="color: #2d3748; margin: 0; font-size: 1rem;">
+            <strong>What to do:</strong> Remove duplicates, handle missing values, and standardize your data.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
     cleaner = st.session_state.cleaner
     
@@ -930,11 +1093,28 @@ def clean_data_page():
 
 def reports_page():
     """Page for viewing reports and analytics."""
-    st.markdown('<div class="sub-header">📊 Reports & Analytics</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sub-header">📊 Step 4: Reports & Analytics</div>', unsafe_allow_html=True)
     
     if not st.session_state.data_loaded:
-        st.warning("⚠️ Please upload data first from the 'Upload Data' page.")
+        st.markdown("""
+        <div class="card" style="background: #fff3e0; border-left: 5px solid #ff9800;">
+            <h4 style="color: #e65100; margin: 0 0 0.5rem 0;">⚠️ Data Required</h4>
+            <p style="color: #e65100; margin: 0; font-size: 1rem;">
+                Please upload data first from <strong>Step 1: Upload Data</strong> page.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
         return
+    
+    # Progress indicator
+    st.markdown("""
+    <div class="card" style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); border-left: 5px solid #667eea;">
+        <h4 style="color: #667eea; margin: 0 0 0.5rem 0;">🎯 Current Step: View Reports</h4>
+        <p style="color: #2d3748; margin: 0; font-size: 1rem;">
+            <strong>What to do:</strong> Review data quality metrics and cleaning analytics.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
     cleaner = st.session_state.cleaner
     report = cleaner.get_cleaning_report()
@@ -1049,11 +1229,28 @@ def reports_page():
 
 def export_data_page():
     """Page for exporting cleaned data."""
-    st.markdown('<div class="sub-header">⬇️ Export Cleaned Data</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sub-header">⬇️ Step 5: Export Cleaned Data</div>', unsafe_allow_html=True)
     
     if not st.session_state.data_loaded:
-        st.warning("⚠️ Please upload data first from the 'Upload Data' page.")
+        st.markdown("""
+        <div class="card" style="background: #fff3e0; border-left: 5px solid #ff9800;">
+            <h4 style="color: #e65100; margin: 0 0 0.5rem 0;">⚠️ Data Required</h4>
+            <p style="color: #e65100; margin: 0; font-size: 1rem;">
+                Please upload data first from <strong>Step 1: Upload Data</strong> page.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
         return
+    
+    # Progress indicator
+    st.markdown("""
+    <div class="card" style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); border-left: 5px solid #667eea;">
+        <h4 style="color: #667eea; margin: 0 0 0.5rem 0;">🎯 Current Step: Export Data</h4>
+        <p style="color: #2d3748; margin: 0; font-size: 1rem;">
+            <strong>What to do:</strong> Download your cleaned data in CSV or Excel format.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
     cleaner = st.session_state.cleaner
     has_uncleaned = st.session_state.get('has_uncleaned', False)
