@@ -1,0 +1,20 @@
+# Development dependencies for AI CRM Data Cleaning
+# Install with: pip install -r requirements-dev.txt
+
+# Production dependencies
+-r requirements.txt
+
+# Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-mock>=3.11.0
+
+# Code Quality
+black>=23.7.0
+flake8>=6.1.0
+pylint>=2.17.0
+mypy>=1.5.0
+
+# Development Tools
+ipython>=8.14.0
+jupyter>=1.0.0
