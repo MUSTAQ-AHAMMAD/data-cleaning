@@ -18,10 +18,14 @@ from data_cleaner import (
     RECORDLINKAGE_IMPORT_ERROR
 )
 
+# Application Constants
+APP_TITLE = "Professional Data Cleaning Suite"
+APP_ICON = "📊"
+
 # Page configuration
 st.set_page_config(
-    page_title="Professional Data Cleaning Suite",
-    page_icon="📊",
+    page_title=APP_TITLE,
+    page_icon=APP_ICON,
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -408,7 +412,7 @@ def main():
     # Header with clean design
     col1, col2, col3 = st.columns([1, 3, 1])
     with col2:
-        st.markdown('<div class="main-header">📊 Professional Data Cleaning Suite</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="main-header">{APP_ICON} {APP_TITLE}</div>', unsafe_allow_html=True)
         st.markdown('<p class="subtitle">Efficiently clean your CSV data and detect duplicates with advanced AI-powered algorithms</p>', unsafe_allow_html=True)
     
     # Sidebar with clean styling and step indicators
