@@ -75,7 +75,9 @@ def test_complete_workflow():
     
     # Step 8: Export cleaned data
     print("\n8. Exporting cleaned data...")
-    output_file = '/tmp/cleaned_data_test.csv'
+    import tempfile
+    import os
+    output_file = os.path.join(tempfile.gettempdir(), 'cleaned_data_test.csv')
     cleaner.export_cleaned_data(output_file, format='csv')
     print(f"   ✓ Exported to {output_file}")
     

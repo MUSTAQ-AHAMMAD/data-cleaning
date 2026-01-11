@@ -7,8 +7,6 @@ echo "=================================================="
 echo "   AI CRM - Data Cleaning System"
 echo "=================================================="
 echo ""
-echo "Starting the application..."
-echo ""
 
 # Check if Python is installed
 if ! command -v python3 &> /dev/null; then
@@ -16,6 +14,22 @@ if ! command -v python3 &> /dev/null; then
     echo "Please install Python 3.8 or higher."
     exit 1
 fi
+
+# Recommend virtual environment
+if [ -z "$VIRTUAL_ENV" ]; then
+    echo "⚠️  Recommendation: Use a virtual environment"
+    echo "   python3 -m venv venv"
+    echo "   source venv/bin/activate"
+    echo ""
+    read -p "Continue without virtual environment? (y/n) " -n 1 -r
+    echo ""
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        exit 1
+    fi
+fi
+
+echo "Starting the application..."
+echo ""
 
 # Check if dependencies are installed
 if ! python3 -c "import streamlit" 2>/dev/null; then

@@ -5,8 +5,6 @@ echo ==================================================
 echo    AI CRM - Data Cleaning System
 echo ==================================================
 echo.
-echo Starting the application...
-echo.
 
 REM Check if Python is installed
 python --version >nul 2>&1
@@ -16,6 +14,19 @@ if errorlevel 1 (
     pause
     exit /b 1
 )
+
+REM Recommend virtual environment
+if not defined VIRTUAL_ENV (
+    echo WARNING: Recommendation: Use a virtual environment
+    echo    python -m venv venv
+    echo    venv\Scripts\activate
+    echo.
+    set /p continue="Continue without virtual environment? (y/n): "
+    if /i not "%continue%"=="y" exit /b 1
+)
+
+echo Starting the application...
+echo.
 
 REM Check if dependencies are installed
 python -c "import streamlit" >nul 2>&1

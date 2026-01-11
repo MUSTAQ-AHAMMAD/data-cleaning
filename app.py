@@ -77,7 +77,8 @@ def main():
     
     # Sidebar
     with st.sidebar:
-        st.image("https://img.icons8.com/color/96/000000/artificial-intelligence.png", width=80)
+        st.title("🧹 AI CRM")
+        st.markdown("---")
         st.title("Navigation")
         page = st.radio(
             "Select Page",
