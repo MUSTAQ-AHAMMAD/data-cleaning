@@ -28,7 +28,7 @@ A powerful, user-friendly Python-based CRM application for efficient CSV data cl
 
 ### 🔍 Duplicate Detection Methods
 
-1. **ML Advanced (Learning) - NEWEST!** 🚀
+1. **ML Advanced (Learning) - NEWEST!** 🚀 *(Requires optional ML dependencies)*
    - **Machine learning that learns and improves with each use**
    - TF-IDF vectorization for semantic similarity
    - DBSCAN clustering for automatic pattern detection
@@ -38,8 +38,9 @@ A powerful, user-friendly Python-based CRM application for efficient CSV data cl
    - Persists learned models for future use
    - Handles complex duplicate scenarios automatically
    - Best for: Organizations processing data regularly that want AI to learn their specific patterns
+   - **Note**: Requires `pip install -r requirements-ml.txt` (see [INSTALLATION.md](INSTALLATION.md))
 
-2. **Smart AI (Automatic)** ⭐
+2. **Smart AI (Automatic)** ⭐ *(Included in core)*
    - Automatically identifies key columns (IDs, names, emails, phones)
    - Uses different matching strategies based on field types
    - Weighted scoring system prioritizes important fields
@@ -47,6 +48,7 @@ A powerful, user-friendly Python-based CRM application for efficient CSV data cl
    - Separates high-confidence from low-confidence matches
    - Works like a human data analyst would
    - Ideal for automated processing with manual review option
+   - **Works with core installation** - no extra dependencies needed
 
 3. **Fuzzy Match (AI-Powered)**
    - Uses Levenshtein distance algorithm
@@ -73,10 +75,17 @@ git clone https://github.com/MUSTAQ-AHAMMAD/data-cleaning.git
 cd data-cleaning
 ```
 
-2. Install dependencies:
+2. Install core dependencies:
 ```bash
 pip install -r requirements.txt
 ```
+
+**Optional**: For ML Advanced features (may require build tools on Windows):
+```bash
+pip install -r requirements-ml.txt
+```
+
+> **Note for Windows users**: If you encounter build errors with ML dependencies, you can skip them and use the core features. See [INSTALLATION.md](INSTALLATION.md) for detailed platform-specific instructions and troubleshooting.
 
 ### Running the Application
 
@@ -89,6 +98,15 @@ streamlit run app.py
 ```
 http://localhost:8501
 ```
+
+### Installation Issues?
+
+If you encounter any installation problems, especially on Windows, please see our detailed [Installation Guide (INSTALLATION.md)](INSTALLATION.md) which covers:
+- Platform-specific installation steps
+- Troubleshooting common issues
+- Windows-specific build tool requirements
+- Using WSL on Windows
+- Feature availability with different installation options
 
 ## 📖 Usage Guide
 

@@ -14,16 +14,37 @@ import re
 import pickle
 import os
 
-# Advanced ML imports
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.cluster import DBSCAN
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.preprocessing import StandardScaler
-import jellyfish
-import phonetics
-import recordlinkage
-from recordlinkage.index import Block
-import ftfy
+# Advanced ML imports - These are optional for basic functionality
+# If not available, ML Advanced features will be disabled
+ML_AVAILABLE = True
+ML_IMPORT_ERROR = None
+
+try:
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.cluster import DBSCAN
+    from sklearn.metrics.pairwise import cosine_similarity
+    from sklearn.preprocessing import StandardScaler
+    import jellyfish
+    import phonetics
+    import ftfy
+except ImportError as e:
+    ML_AVAILABLE = False
+    ML_IMPORT_ERROR = str(e)
+    # Provide stub objects to prevent immediate crashes
+    TfidfVectorizer = None
+    DBSCAN = None
+    StandardScaler = None
+
+# Record linkage is optional - requires native compilation on Windows
+RECORDLINKAGE_AVAILABLE = True
+RECORDLINKAGE_IMPORT_ERROR = None
+
+try:
+    import recordlinkage
+    from recordlinkage.index import Block
+except ImportError as e:
+    RECORDLINKAGE_AVAILABLE = False
+    RECORDLINKAGE_IMPORT_ERROR = str(e)
 
 
 class DataCleaner:
@@ -38,7 +59,7 @@ class DataCleaner:
         
         # ML model components that learn and improve
         self.tfidf_vectorizer = None
-        self.scaler = StandardScaler()
+        self.scaler = StandardScaler() if ML_AVAILABLE else None
         self.learned_patterns = []
         self.model_path = 'ml_models'
         self.performance_history = []
@@ -537,6 +558,15 @@ class DataCleaner:
         if self.df is None:
             raise ValueError("No data loaded. Please load a CSV file first.")
         
+        # Check if ML dependencies are available
+        if not ML_AVAILABLE:
+            raise ImportError(
+                "ML Advanced features require additional dependencies that are not installed.\n\n"
+                "To use ML Advanced features, install the optional ML dependencies:\n"
+                "  pip install -r requirements-ml.txt\n\n"
+                "Or use 'Smart AI (Automatic)' detection which works with core dependencies."
+            )
+        
         self.cleaning_report['cleaning_method'] = 'ML Advanced (Learning-Based)'
         
         # Step 1: Auto-identify columns
@@ -753,6 +783,11 @@ class DataCleaner:
     def _apply_record_linkage(self, column_types: Dict[str, List[str]]) -> List[Dict]:
         """Apply record linkage algorithms for additional duplicate detection."""
         groups = []
+        
+        # Check if recordlinkage is available
+        if not RECORDLINKAGE_AVAILABLE:
+            # Skip record linkage if not available
+            return groups
         
         try:
             # Create indexer

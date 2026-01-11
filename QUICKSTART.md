@@ -112,9 +112,20 @@ streamlit run app.py --server.port 8502
 ```
 
 ### Dependencies not installing?
-Make sure you have pip updated:
+
+**On Windows:** Some advanced ML features may require Visual Studio Build Tools. See [INSTALLATION.md](INSTALLATION.md) for detailed instructions.
+
+**Quick fix:** Install core dependencies only:
 ```bash
 pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+The app will work perfectly with core features (Smart AI, Fuzzy Match, Exact Match).
+
+For advanced ML features:
+```bash
+pip install -r requirements-ml.txt
 ```
 
 ## That's All!

@@ -10,7 +10,7 @@ import plotly.graph_objects as go
 from datetime import datetime
 import io
 import json
-from data_cleaner import DataCleaner
+from data_cleaner import DataCleaner, ML_AVAILABLE, ML_IMPORT_ERROR, RECORDLINKAGE_AVAILABLE
 
 # Page configuration
 st.set_page_config(
@@ -500,6 +500,35 @@ def detect_duplicates_page():
     available_columns = list(df.columns)
     
     if detection_method == "ML Advanced (Learning)":
+        # Check if ML dependencies are available
+        if not ML_AVAILABLE:
+            st.error("""
+            ⚠️ **ML Advanced features are not available**
+            
+            The advanced ML dependencies are not installed. This feature requires additional packages 
+            that may need compilation on Windows systems.
+            
+            **To enable ML Advanced features:**
+            
+            1. **On Linux/Mac:**
+               ```bash
+               pip install -r requirements-ml.txt
+               ```
+            
+            2. **On Windows:**
+               - Install Visual Studio Build Tools first
+               - Or use Windows Subsystem for Linux (WSL)
+               - Or use pre-compiled wheels if available
+            
+            **Alternative:** Use "Smart AI (Automatic)" detection which provides excellent results 
+            without requiring advanced ML packages!
+            """)
+            
+            if not RECORDLINKAGE_AVAILABLE:
+                st.warning(f"Note: Record linkage is also unavailable - {RECORDLINKAGE_IMPORT_ERROR}")
+            
+            return
+        
         st.markdown("""
         <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
             <h3 style="color: white; margin-top: 0;">🧠 ML Advanced Detection</h3>
@@ -515,6 +544,9 @@ def detect_duplicates_page():
         - 🔗 Record linkage algorithms
         - 📈 Learns from each cleaning session and improves over time
         """)
+        
+        if not RECORDLINKAGE_AVAILABLE:
+            st.info("ℹ️ Record linkage algorithms are not available but other ML features will work.")
         
         col1, col2, col3 = st.columns(3)
         with col1:
