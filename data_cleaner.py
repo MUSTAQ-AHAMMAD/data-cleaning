@@ -155,7 +155,8 @@ class DataCleaner:
                 # Normalize to "firstname lastname" format
                 normalized = f"{parsed.first} {parsed.middle} {parsed.last}".strip()
                 return ' '.join(normalized.split())  # Remove extra spaces
-            except:
+            except Exception:
+                # If parsing fails, fall through to basic normalization
                 pass
         
         # Fallback: basic normalization
@@ -179,7 +180,8 @@ class DataCleaner:
                 from email_validator import validate_email
                 validated = validate_email(email, check_deliverability=False)
                 return validated.email.lower()
-            except:
+            except Exception:
+                # If validation fails, return normalized email as-is
                 pass
         
         return email
