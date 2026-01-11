@@ -1,5 +1,5 @@
 """
-AI CRM - Data Cleaning Application
+Professional Data Cleaning Suite
 A user-friendly web interface for cleaning CSV files and detecting duplicates.
 """
 
@@ -15,18 +15,24 @@ from data_cleaner import (
     ML_AVAILABLE, 
     ML_IMPORT_ERROR, 
     RECORDLINKAGE_AVAILABLE,
-    RECORDLINKAGE_IMPORT_ERROR
+    RECORDLINKAGE_IMPORT_ERROR,
+    PERFORMANCE_LIBS_AVAILABLE,
+    RETAIL_LIBS_AVAILABLE
 )
+
+# Application Constants
+APP_TITLE = "Professional Data Cleaning Suite"
+APP_ICON = "📊"
 
 # Page configuration
 st.set_page_config(
-    page_title="AI CRM - Data Cleaning",
-    page_icon="🧹",
+    page_title=APP_TITLE,
+    page_icon=APP_ICON,
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for modern, professional UI
+# Custom CSS for clean, professional UI
 st.markdown("""
     <style>
     /* Import modern font */
@@ -37,9 +43,9 @@ st.markdown("""
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
     
-    /* Main container */
+    /* Main container - clean white background */
     .main {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        background: #ffffff;
         padding: 2rem;
     }
     
@@ -49,13 +55,14 @@ st.markdown("""
         max-width: 1400px;
     }
     
-    /* Sidebar styling */
+    /* Sidebar styling - clean light background */
     section[data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #2d3e50 0%, #1a252f 100%) !important;
+        background: #f8f9fa !important;
+        border-right: 1px solid #e0e0e0;
     }
     
     section[data-testid="stSidebar"] * {
-        color: #ffffff !important;
+        color: #2c3e50 !important;
     }
     
     section[data-testid="stSidebar"] h1,
@@ -64,7 +71,7 @@ st.markdown("""
     section[data-testid="stSidebar"] h4,
     section[data-testid="stSidebar"] h5,
     section[data-testid="stSidebar"] h6 {
-        color: #ffffff !important;
+        color: #1a252f !important;
         font-weight: 700 !important;
     }
     
@@ -72,310 +79,299 @@ st.markdown("""
     section[data-testid="stSidebar"] span,
     section[data-testid="stSidebar"] label,
     section[data-testid="stSidebar"] div {
-        color: #ffffff !important;
+        color: #2c3e50 !important;
     }
     
-    /* Navigation items styling */
+    /* Navigation items styling - clean design */
     section[data-testid="stSidebar"] .stRadio > label {
-        background: rgba(255, 255, 255, 0.15) !important;
-        padding: 14px 16px !important;
-        border-radius: 10px !important;
-        margin: 8px 0 !important;
-        transition: all 0.3s ease !important;
-        border-left: 4px solid transparent !important;
-        font-weight: 600 !important;
-        font-size: 1.05rem !important;
-        color: #ffffff !important;
+        background: #ffffff !important;
+        padding: 12px 16px !important;
+        border-radius: 8px !important;
+        margin: 6px 0 !important;
+        transition: all 0.2s ease !important;
+        border: 1px solid #e0e0e0 !important;
+        font-weight: 500 !important;
+        font-size: 0.95rem !important;
+        color: #2c3e50 !important;
     }
     
     section[data-testid="stSidebar"] .stRadio > label * {
-        color: #ffffff !important;
+        color: #2c3e50 !important;
     }
     
     section[data-testid="stSidebar"] .stRadio > label:hover {
-        background: rgba(255, 255, 255, 0.25) !important;
-        transform: translateX(8px) !important;
-        border-left: 4px solid #667eea !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+        background: #f0f4ff !important;
+        border-color: #2563eb !important;
+        transform: translateX(4px) !important;
     }
     
-    /* Active navigation item */
+    /* Active navigation item - clean blue accent */
     section[data-testid="stSidebar"] .stRadio > label[data-checked="true"] {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-        border-left: 4px solid #ffd700 !important;
-        font-weight: 700 !important;
-        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.5) !important;
+        background: #2563eb !important;
+        border-color: #2563eb !important;
+        font-weight: 600 !important;
+        color: #ffffff !important;
     }
     
     section[data-testid="stSidebar"] .stRadio > label[data-checked="true"] * {
         color: #ffffff !important;
     }
     
-    /* Header styles */
+    /* Header styles - clean, readable */
     .main-header {
-        font-size: 3rem;
-        font-weight: 800;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #1e293b;
         text-align: center;
-        margin-bottom: 1rem;
-        letter-spacing: -1px;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.5px;
     }
     
     .sub-header {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #1a202c;
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: #1e293b;
         margin-top: 2rem;
         margin-bottom: 1.5rem;
         padding: 1rem 1.5rem;
-        background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
-        border-left: 5px solid #667eea;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        background: #f8fafc;
+        border-left: 4px solid #2563eb;
+        border-radius: 6px;
     }
     
     .subtitle {
         text-align: center;
-        color: #2d3748;
-        font-size: 1.2rem;
+        color: #475569;
+        font-size: 1.1rem;
         margin-bottom: 3rem;
-        font-weight: 500;
+        font-weight: 400;
         line-height: 1.6;
     }
     
-    /* Card styles */
+    /* Card styles - clean white cards */
     .card {
-        background: white;
-        border-radius: 16px;
-        padding: 2rem;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        background: #ffffff;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         margin: 1.5rem 0;
-        transition: all 0.3s ease;
-        border: 1px solid rgba(102, 126, 234, 0.1);
+        border: 1px solid #e2e8f0;
     }
     
-    .card:hover {
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-        transform: translateY(-4px);
-        border-color: rgba(102, 126, 234, 0.3);
-    }
-    
-    /* Metric cards */
+    /* Metric cards - clean design */
     .metric-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: #2563eb;
         color: white;
         padding: 1.5rem;
-        border-radius: 12px;
+        border-radius: 8px;
         text-align: center;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
     }
     
     .metric-value {
-        font-size: 2.5rem;
+        font-size: 2rem;
         font-weight: 700;
         margin: 0.5rem 0;
+        color: #ffffff;
     }
     
     .metric-label {
-        font-size: 0.95rem;
-        opacity: 0.9;
+        font-size: 0.875rem;
+        color: #dbeafe;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 0.5px;
+        font-weight: 600;
     }
     
     /* Alert boxes with better visibility */
     .stAlert {
-        border-radius: 12px;
-        border: 2px solid;
-        padding: 1.2rem 1.5rem;
+        border-radius: 8px;
+        border: 1px solid;
+        padding: 1rem 1.25rem;
         font-weight: 500;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     
     /* Info alerts */
     div[data-baseweb="notification"][kind="info"] {
-        background-color: #e3f2fd !important;
-        border-color: #2196f3 !important;
-        color: #0d47a1 !important;
+        background-color: #eff6ff !important;
+        border-color: #3b82f6 !important;
+        color: #1e40af !important;
     }
     
     div[data-baseweb="notification"][kind="info"] * {
-        color: #0d47a1 !important;
+        color: #1e40af !important;
     }
     
     /* Success alerts */
     div[data-baseweb="notification"][kind="success"] {
-        background-color: #e8f5e9 !important;
-        border-color: #4caf50 !important;
-        color: #1b5e20 !important;
+        background-color: #f0fdf4 !important;
+        border-color: #22c55e !important;
+        color: #166534 !important;
     }
     
     div[data-baseweb="notification"][kind="success"] * {
-        color: #1b5e20 !important;
+        color: #166534 !important;
     }
     
     /* Warning alerts */
     div[data-baseweb="notification"][kind="warning"] {
-        background-color: #fff3e0 !important;
-        border-color: #ff9800 !important;
-        color: #e65100 !important;
+        background-color: #fffbeb !important;
+        border-color: #f59e0b !important;
+        color: #92400e !important;
     }
     
     div[data-baseweb="notification"][kind="warning"] * {
-        color: #e65100 !important;
+        color: #92400e !important;
     }
     
     /* Error alerts */
     div[data-baseweb="notification"][kind="error"] {
-        background-color: #ffebee !important;
-        border-color: #f44336 !important;
-        color: #b71c1c !important;
+        background-color: #fef2f2 !important;
+        border-color: #ef4444 !important;
+        color: #991b1b !important;
     }
     
     div[data-baseweb="notification"][kind="error"] * {
-        color: #b71c1c !important;
+        color: #991b1b !important;
     }
     
-    /* Button styling */
+    /* Button styling - clean solid colors */
     .stButton > button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: #2563eb;
         color: white !important;
         border: none;
-        border-radius: 10px;
-        padding: 0.75rem 2.5rem;
-        font-weight: 700;
-        font-size: 1.05rem;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        border-radius: 6px;
+        padding: 0.625rem 1.5rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     }
     
     .stButton > button:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
-        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        background: #1d4ed8;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transform: translateY(-1px);
     }
     
     .stButton > button:active {
-        transform: translateY(-1px);
+        transform: translateY(0);
     }
     
     /* Primary button */
     .stButton > button[kind="primary"] {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+        background: #2563eb;
+        box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
     }
     
     .stButton > button[kind="primary"]:hover {
-        background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
-        box-shadow: 0 8px 25px rgba(245, 87, 108, 0.5);
+        background: #1d4ed8;
+        box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
     }
     
     /* Input fields */
     .stTextInput > div > div > input,
     .stSelectbox > div > div,
     .stMultiSelect > div > div {
-        border-radius: 8px;
-        border: 2px solid #e2e8f0;
-        transition: all 0.3s ease;
+        border-radius: 6px;
+        border: 1px solid #d1d5db;
+        transition: all 0.2s ease;
     }
     
     .stTextInput > div > div > input:focus,
     .stSelectbox > div > div:focus,
     .stMultiSelect > div > div:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     }
     
     /* Tabs */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
-        background: white;
-        padding: 8px;
-        border-radius: 12px;
+        gap: 4px;
+        background: #f8fafc;
+        padding: 4px;
+        border-radius: 8px;
     }
     
     .stTabs [data-baseweb="tab"] {
-        border-radius: 8px;
-        padding: 12px 24px;
-        font-weight: 600;
-        transition: all 0.3s ease;
+        border-radius: 6px;
+        padding: 10px 20px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        color: #64748b;
     }
     
     .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: #2563eb;
         color: white;
     }
     
     /* Dataframe styling */
     .stDataFrame {
-        border-radius: 12px;
+        border-radius: 8px;
         overflow: hidden;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e2e8f0;
     }
     
     /* Expander */
     .streamlit-expanderHeader {
-        background: white;
-        border-radius: 8px;
-        border: 2px solid #e2e8f0;
-        font-weight: 600;
-        transition: all 0.3s ease;
+        background: #ffffff;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+        font-weight: 500;
+        transition: all 0.2s ease;
     }
     
     .streamlit-expanderHeader:hover {
-        border-color: #667eea;
-        background: #f7fafc;
+        border-color: #2563eb;
+        background: #f8fafc;
     }
     
     /* Progress bar */
     .stProgress > div > div > div {
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        background: #2563eb;
     }
     
     /* Slider */
     .stSlider > div > div > div {
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        background: #2563eb;
     }
     
     /* File uploader */
     [data-testid="stFileUploader"] {
-        background: white;
-        border-radius: 12px;
+        background: #ffffff;
+        border-radius: 8px;
         border: 2px dashed #cbd5e0;
         padding: 2rem;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
     }
     
     [data-testid="stFileUploader"]:hover {
-        border-color: #667eea;
-        background: #f7fafc;
+        border-color: #2563eb;
+        background: #f8fafc;
     }
     
     /* Metrics */
     [data-testid="stMetric"] {
-        background: white;
+        background: #ffffff;
         padding: 1rem;
-        border-radius: 12px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e2e8f0;
     }
     
     [data-testid="stMetricValue"] {
-        font-size: 2rem;
+        font-size: 1.875rem;
         font-weight: 700;
-        color: #667eea;
+        color: #1e293b;
     }
     
     /* Checkbox and Radio */
     .stCheckbox, .stRadio {
-        background: white;
+        background: transparent;
         padding: 0.5rem;
-        border-radius: 8px;
+        border-radius: 6px;
     }
     
     /* Hide Streamlit branding */
@@ -384,22 +380,22 @@ st.markdown("""
     
     /* Scrollbar styling */
     ::-webkit-scrollbar {
-        width: 10px;
-        height: 10px;
+        width: 8px;
+        height: 8px;
     }
     
     ::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 10px;
+        background: #f1f5f9;
+        border-radius: 4px;
     }
     
     ::-webkit-scrollbar-thumb {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 10px;
+        background: #94a3b8;
+        border-radius: 4px;
     }
     
     ::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        background: #64748b;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -415,15 +411,15 @@ if 'cleaner' not in st.session_state:
 def main():
     """Main application function."""
     
-    # Header with modern design
+    # Header with clean design
     col1, col2, col3 = st.columns([1, 3, 1])
     with col2:
-        st.markdown('<div class="main-header">🧹 AI CRM - Data Cleaning System</div>', unsafe_allow_html=True)
-        st.markdown('<p class="subtitle">Efficiently clean your CSV data and remove duplicate users with AI-powered detection</p>', unsafe_allow_html=True)
+        st.markdown(f'<div class="main-header">{APP_ICON} {APP_TITLE}</div>', unsafe_allow_html=True)
+        st.markdown('<p class="subtitle">Efficiently clean your CSV data and detect duplicates with advanced AI-powered algorithms</p>', unsafe_allow_html=True)
     
-    # Sidebar with modern styling and step indicators
+    # Sidebar with clean styling and step indicators
     with st.sidebar:
-        st.markdown("## 🧹 AI CRM")
+        st.markdown(f"## {APP_ICON} Data Cleaning")
         st.markdown("---")
         st.markdown("### 📍 Step-by-Step Process")
         
@@ -453,34 +449,34 @@ def main():
         if st.session_state.data_loaded:
             summary = st.session_state.cleaner.get_data_summary()
             
-            # Better styled metrics in sidebar
+            # Clean styled metrics in sidebar
             st.markdown(f"""
-            <div style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 10px; margin-bottom: 0.5rem;">
-                <div style="color: #ffd700; font-size: 0.85rem; font-weight: 600;">TOTAL RECORDS</div>
-                <div style="color: #ffffff; font-size: 1.8rem; font-weight: 700;">{summary.get('total_rows', 0):,}</div>
+            <div style="background: #ffffff; padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; border: 1px solid #e2e8f0;">
+                <div style="color: #64748b; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">TOTAL RECORDS</div>
+                <div style="color: #1e293b; font-size: 1.5rem; font-weight: 700;">{summary.get('total_rows', 0):,}</div>
             </div>
             """, unsafe_allow_html=True)
             
             st.markdown(f"""
-            <div style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 10px; margin-bottom: 0.5rem;">
-                <div style="color: #ffd700; font-size: 0.85rem; font-weight: 600;">COLUMNS</div>
-                <div style="color: #ffffff; font-size: 1.8rem; font-weight: 700;">{summary.get('total_columns', 0)}</div>
+            <div style="background: #ffffff; padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; border: 1px solid #e2e8f0;">
+                <div style="color: #64748b; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">COLUMNS</div>
+                <div style="color: #1e293b; font-size: 1.5rem; font-weight: 700;">{summary.get('total_columns', 0)}</div>
             </div>
             """, unsafe_allow_html=True)
             
             if st.session_state.duplicates_detected:
                 report = st.session_state.cleaner.get_cleaning_report()
                 st.markdown(f"""
-                <div style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 10px;">
-                    <div style="color: #ffd700; font-size: 0.85rem; font-weight: 600;">DUPLICATES FOUND</div>
-                    <div style="color: #ff6b6b; font-size: 1.8rem; font-weight: 700;">{report.get('duplicates_found', 0)}</div>
+                <div style="background: #ffffff; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <div style="color: #64748b; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">DUPLICATES FOUND</div>
+                    <div style="color: #dc2626; font-size: 1.5rem; font-weight: 700;">{report.get('duplicates_found', 0)}</div>
                 </div>
                 """, unsafe_allow_html=True)
         else:
             st.markdown("""
-            <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 10px; text-align: center;">
-                <div style="color: #ffffff; font-size: 0.95rem;">💡 No data loaded yet</div>
-                <div style="color: rgba(255,255,255,0.7); font-size: 0.85rem; margin-top: 0.5rem;">Upload data to see stats</div>
+            <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0;">
+                <div style="color: #475569; font-size: 0.95rem;">💡 No data loaded yet</div>
+                <div style="color: #64748b; font-size: 0.85rem; margin-top: 0.5rem;">Upload data to see stats</div>
             </div>
             """, unsafe_allow_html=True)
     
@@ -502,9 +498,9 @@ def upload_data_page():
     
     # Progress indicator
     st.markdown("""
-    <div class="card" style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); border-left: 5px solid #667eea;">
-        <h4 style="color: #667eea; margin: 0 0 0.5rem 0;">🎯 Current Step: Data Upload</h4>
-        <p style="color: #2d3748; margin: 0; font-size: 1rem;">
+    <div class="card" style="background: #eff6ff; border-left: 4px solid #2563eb;">
+        <h4 style="color: #1e40af; margin: 0 0 0.5rem 0;">🎯 Current Step: Data Upload</h4>
+        <p style="color: #1e293b; margin: 0; font-size: 1rem;">
             <strong>What to do:</strong> Upload your CSV file or generate sample data to begin the cleaning process.
         </p>
     </div>
@@ -512,7 +508,7 @@ def upload_data_page():
     
     st.markdown("""
     <div class="card">
-        <p style="font-size: 1.1rem; color: #4a5568;">
+        <p style="font-size: 1.1rem; color: #475569;">
             Upload a CSV file containing user data. Our AI-powered system will analyze it for duplicates and help you clean the data efficiently.
         </p>
     </div>
@@ -622,9 +618,9 @@ def detect_duplicates_page():
     
     if not st.session_state.data_loaded:
         st.markdown("""
-        <div class="card" style="background: #fff3e0; border-left: 5px solid #ff9800;">
-            <h4 style="color: #e65100; margin: 0 0 0.5rem 0;">⚠️ Data Required</h4>
-            <p style="color: #e65100; margin: 0; font-size: 1rem;">
+        <div class="card" style="background: #fffbeb; border-left: 4px solid #f59e0b;">
+            <h4 style="color: #92400e; margin: 0 0 0.5rem 0;">⚠️ Data Required</h4>
+            <p style="color: #92400e; margin: 0; font-size: 1rem;">
                 Please upload data first from <strong>Step 1: Upload Data</strong> page.
             </p>
         </div>
@@ -633,9 +629,9 @@ def detect_duplicates_page():
     
     # Progress indicator
     st.markdown("""
-    <div class="card" style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); border-left: 5px solid #667eea;">
-        <h4 style="color: #667eea; margin: 0 0 0.5rem 0;">🎯 Current Step: Duplicate Detection</h4>
-        <p style="color: #2d3748; margin: 0; font-size: 1rem;">
+    <div class="card" style="background: #eff6ff; border-left: 4px solid #2563eb;">
+        <h4 style="color: #1e40af; margin: 0 0 0.5rem 0;">🎯 Current Step: Duplicate Detection</h4>
+        <p style="color: #1e293b; margin: 0; font-size: 1rem;">
             <strong>What to do:</strong> Choose a detection method and configure parameters to find duplicate records.
         </p>
     </div>
@@ -646,7 +642,7 @@ def detect_duplicates_page():
     
     st.markdown("""
     <div class="card">
-        <p style="font-size: 1.1rem; color: #4a5568;">
+        <p style="font-size: 1.1rem; color: #475569;">
             Choose a duplicate detection method and configure the parameters. Our AI-powered algorithms will analyze your data intelligently.
         </p>
     </div>
@@ -696,11 +692,26 @@ def detect_duplicates_page():
             return
         
         st.markdown("""
-        <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-            <h3 style="color: white; margin-top: 0;">🧠 ML Advanced Detection</h3>
-            <p style="opacity: 0.95;">Uses cutting-edge machine learning algorithms that learn patterns from your data and get better with each use!</p>
+        <div class="card" style="background: #eff6ff; border: 1px solid #3b82f6;">
+            <h3 style="color: #1e40af; margin-top: 0;">🧠 ML Advanced Detection</h3>
+            <p style="color: #1e293b;">Uses cutting-edge machine learning algorithms that learn patterns from your data and get better with each use!</p>
         </div>
         """, unsafe_allow_html=True)
+        
+        # Show optimization status
+        optimization_status = []
+        if PERFORMANCE_LIBS_AVAILABLE:
+            optimization_status.append("✅ Performance Optimization Active (2-10x faster)")
+        else:
+            optimization_status.append("⚠️ Performance optimization not installed (slower processing)")
+        
+        if RETAIL_LIBS_AVAILABLE:
+            optimization_status.append("✅ Retail Data Optimization Active (better accuracy for customer data)")
+        else:
+            optimization_status.append("💡 Install retail libraries for better accuracy: pip install nameparser email-validator")
+        
+        if optimization_status:
+            st.info("\n".join(optimization_status))
         
         st.markdown("""
         **Advanced Features:**
@@ -709,7 +720,15 @@ def detect_duplicates_page():
         - 🗣️ Phonetic matching (Soundex, Metaphone) for name variations
         - 🔗 Record linkage algorithms
         - 📈 Learns from each cleaning session and improves over time
+        - 🏪 Retail-specific normalization (names, emails, phones)
+        - ⚡ Parallel processing for large datasets
         """)
+        
+        # Show capacity information
+        if PERFORMANCE_LIBS_AVAILABLE:
+            st.success("🚀 **Performance Mode**: Can process up to 100,000 rows efficiently")
+        else:
+            st.warning("⚡ **Standard Mode**: Can process up to 50,000 rows. Install performance libraries for 2x capacity: `pip install numba joblib`")
         
         if not RECORDLINKAGE_AVAILABLE:
             st.info("ℹ️ Record linkage algorithms are not available but other ML features will work.")
@@ -966,9 +985,9 @@ def clean_data_page():
     
     if not st.session_state.data_loaded:
         st.markdown("""
-        <div class="card" style="background: #fff3e0; border-left: 5px solid #ff9800;">
-            <h4 style="color: #e65100; margin: 0 0 0.5rem 0;">⚠️ Data Required</h4>
-            <p style="color: #e65100; margin: 0; font-size: 1rem;">
+        <div class="card" style="background: #fffbeb; border-left: 4px solid #f59e0b;">
+            <h4 style="color: #92400e; margin: 0 0 0.5rem 0;">⚠️ Data Required</h4>
+            <p style="color: #92400e; margin: 0; font-size: 1rem;">
                 Please upload data first from <strong>Step 1: Upload Data</strong> page.
             </p>
         </div>
@@ -977,9 +996,9 @@ def clean_data_page():
     
     # Progress indicator
     st.markdown("""
-    <div class="card" style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); border-left: 5px solid #667eea;">
-        <h4 style="color: #667eea; margin: 0 0 0.5rem 0;">🎯 Current Step: Data Cleaning</h4>
-        <p style="color: #2d3748; margin: 0; font-size: 1rem;">
+    <div class="card" style="background: #eff6ff; border-left: 4px solid #2563eb;">
+        <h4 style="color: #1e40af; margin: 0 0 0.5rem 0;">🎯 Current Step: Data Cleaning</h4>
+        <p style="color: #1e293b; margin: 0; font-size: 1rem;">
             <strong>What to do:</strong> Remove duplicates, handle missing values, and standardize your data.
         </p>
     </div>
@@ -1117,9 +1136,9 @@ def reports_page():
     
     if not st.session_state.data_loaded:
         st.markdown("""
-        <div class="card" style="background: #fff3e0; border-left: 5px solid #ff9800;">
-            <h4 style="color: #e65100; margin: 0 0 0.5rem 0;">⚠️ Data Required</h4>
-            <p style="color: #e65100; margin: 0; font-size: 1rem;">
+        <div class="card" style="background: #fffbeb; border-left: 4px solid #f59e0b;">
+            <h4 style="color: #92400e; margin: 0 0 0.5rem 0;">⚠️ Data Required</h4>
+            <p style="color: #92400e; margin: 0; font-size: 1rem;">
                 Please upload data first from <strong>Step 1: Upload Data</strong> page.
             </p>
         </div>
@@ -1128,9 +1147,9 @@ def reports_page():
     
     # Progress indicator
     st.markdown("""
-    <div class="card" style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); border-left: 5px solid #667eea;">
-        <h4 style="color: #667eea; margin: 0 0 0.5rem 0;">🎯 Current Step: View Reports</h4>
-        <p style="color: #2d3748; margin: 0; font-size: 1rem;">
+    <div class="card" style="background: #eff6ff; border-left: 4px solid #2563eb;">
+        <h4 style="color: #1e40af; margin: 0 0 0.5rem 0;">🎯 Current Step: View Reports</h4>
+        <p style="color: #1e293b; margin: 0; font-size: 1rem;">
             <strong>What to do:</strong> Review data quality metrics and cleaning analytics.
         </p>
     </div>
@@ -1253,9 +1272,9 @@ def export_data_page():
     
     if not st.session_state.data_loaded:
         st.markdown("""
-        <div class="card" style="background: #fff3e0; border-left: 5px solid #ff9800;">
-            <h4 style="color: #e65100; margin: 0 0 0.5rem 0;">⚠️ Data Required</h4>
-            <p style="color: #e65100; margin: 0; font-size: 1rem;">
+        <div class="card" style="background: #fffbeb; border-left: 4px solid #f59e0b;">
+            <h4 style="color: #92400e; margin: 0 0 0.5rem 0;">⚠️ Data Required</h4>
+            <p style="color: #92400e; margin: 0; font-size: 1rem;">
                 Please upload data first from <strong>Step 1: Upload Data</strong> page.
             </p>
         </div>
@@ -1264,9 +1283,9 @@ def export_data_page():
     
     # Progress indicator
     st.markdown("""
-    <div class="card" style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); border-left: 5px solid #667eea;">
-        <h4 style="color: #667eea; margin: 0 0 0.5rem 0;">🎯 Current Step: Export Data</h4>
-        <p style="color: #2d3748; margin: 0; font-size: 1rem;">
+    <div class="card" style="background: #eff6ff; border-left: 4px solid #2563eb;">
+        <h4 style="color: #1e40af; margin: 0 0 0.5rem 0;">🎯 Current Step: Export Data</h4>
+        <p style="color: #1e293b; margin: 0; font-size: 1rem;">
             <strong>What to do:</strong> Download your cleaned data in CSV or Excel format.
         </p>
     </div>

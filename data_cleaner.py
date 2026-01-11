@@ -18,6 +18,7 @@ import os
 # If not available, ML Advanced features will be disabled
 ML_AVAILABLE = True
 ML_IMPORT_ERROR = None
+PERFORMANCE_LIBS_AVAILABLE = False
 
 try:
     from sklearn.feature_extraction.text import TfidfVectorizer
@@ -27,6 +28,15 @@ try:
     import jellyfish
     import phonetics
     import ftfy
+    
+    # Try to import performance optimization libraries
+    try:
+        import numba
+        from joblib import Parallel, delayed
+        PERFORMANCE_LIBS_AVAILABLE = True
+    except ImportError:
+        PERFORMANCE_LIBS_AVAILABLE = False
+        
 except ImportError as e:
     ML_AVAILABLE = False
     ML_IMPORT_ERROR = str(e)
@@ -45,6 +55,15 @@ try:
 except ImportError as e:
     RECORDLINKAGE_AVAILABLE = False
     RECORDLINKAGE_IMPORT_ERROR = str(e)
+
+# Retail-specific libraries for better customer data handling
+RETAIL_LIBS_AVAILABLE = False
+try:
+    from nameparser import HumanName
+    import email_validator
+    RETAIL_LIBS_AVAILABLE = True
+except ImportError:
+    RETAIL_LIBS_AVAILABLE = False
 
 
 class DataCleaner:
@@ -118,6 +137,68 @@ class DataCleaner:
         except Exception as e:
             # If saving fails, continue without saving
             pass
+    
+    def _normalize_retail_name(self, name: str) -> str:
+        """
+        Normalize customer names for retail data.
+        Handles common variations in retail customer databases.
+        """
+        if not name or pd.isna(name):
+            return ""
+        
+        name = str(name).strip().lower()
+        
+        # Use nameparser if available for better name normalization
+        if RETAIL_LIBS_AVAILABLE:
+            try:
+                parsed = HumanName(name)
+                # Normalize to "firstname lastname" format
+                normalized = f"{parsed.first} {parsed.middle} {parsed.last}".strip()
+                return ' '.join(normalized.split())  # Remove extra spaces
+            except Exception:
+                # If parsing fails, fall through to basic normalization
+                pass
+        
+        # Fallback: basic normalization
+        # Remove common titles
+        for title in ['mr', 'mrs', 'ms', 'dr', 'miss', 'prof']:
+            name = name.replace(f'{title}.', '').replace(f'{title} ', '')
+        
+        # Remove extra spaces
+        return ' '.join(name.split())
+    
+    def _normalize_retail_email(self, email: str) -> str:
+        """Normalize email addresses for comparison."""
+        if not email or pd.isna(email):
+            return ""
+        
+        email = str(email).strip().lower()
+        
+        # Validate email format if library available
+        if RETAIL_LIBS_AVAILABLE:
+            try:
+                from email_validator import validate_email
+                validated = validate_email(email, check_deliverability=False)
+                return validated.email.lower()
+            except Exception:
+                # If validation fails, return normalized email as-is
+                pass
+        
+        return email
+    
+    def _normalize_phone(self, phone: str) -> str:
+        """Normalize phone numbers for comparison."""
+        if not phone or pd.isna(phone):
+            return ""
+        
+        # Remove all non-numeric characters
+        phone = re.sub(r'\D', '', str(phone))
+        
+        # Keep only last 10 digits (for US numbers) or all if less
+        if len(phone) > 10:
+            phone = phone[-10:]
+        
+        return phone
     
     def load_csv(self, file_path: str, encoding: str = 'utf-8') -> pd.DataFrame:
         """Load CSV file into a pandas DataFrame."""
@@ -560,8 +641,14 @@ class DataCleaner:
         
         # Check for extremely large datasets to prevent memory errors
         n_rows = len(self.df)
-        MAX_ML_ADVANCED_ROWS = 50000
-        FULL_MATRIX_THRESHOLD = 5000
+        
+        # Increase limits if performance libraries are available
+        if PERFORMANCE_LIBS_AVAILABLE:
+            MAX_ML_ADVANCED_ROWS = 100000  # Doubled with optimization
+            FULL_MATRIX_THRESHOLD = 10000  # Doubled with numba
+        else:
+            MAX_ML_ADVANCED_ROWS = 50000
+            FULL_MATRIX_THRESHOLD = 5000
         
         if n_rows > MAX_ML_ADVANCED_ROWS:
             raise ValueError(
@@ -596,17 +683,57 @@ class DataCleaner:
         
         self.cleaning_report['columns_analyzed'] = analyze_columns
         
-        # Step 2: Clean and normalize text data
-        cleaned_texts = []
-        for idx, row in self.df.iterrows():
-            text_parts = []
-            for col in analyze_columns:
-                val = str(row.get(col, ''))
-                # Use ftfy to fix text encoding issues
-                val = ftfy.fix_text(val)
-                val = self._normalize_text(val)
-                text_parts.append(val)
-            cleaned_texts.append(' '.join(text_parts))
+        # Step 2: Clean and normalize text data with retail-specific handling
+        # Use parallel processing if available for speed
+        if PERFORMANCE_LIBS_AVAILABLE and n_rows > 1000:
+            # Parallel processing for large datasets
+            def process_row(idx_row):
+                idx, row = idx_row
+                text_parts = []
+                for col in analyze_columns:
+                    val = str(row.get(col, ''))
+                    
+                    # Apply retail-specific normalization
+                    if 'name' in col.lower():
+                        val = self._normalize_retail_name(val)
+                    elif 'email' in col.lower():
+                        val = self._normalize_retail_email(val)
+                    elif 'phone' in col.lower():
+                        val = self._normalize_phone(val)
+                    else:
+                        # Use ftfy to fix text encoding issues
+                        val = ftfy.fix_text(val)
+                        val = self._normalize_text(val)
+                    
+                    text_parts.append(val)
+                return ' '.join(text_parts)
+            
+            # Use joblib for parallel processing
+            cleaned_texts = Parallel(n_jobs=-1, prefer="threads")(
+                delayed(process_row)((idx, row)) for idx, row in self.df.iterrows()
+            )
+        else:
+            # Sequential processing for smaller datasets
+            cleaned_texts = []
+            for idx, row in self.df.iterrows():
+                text_parts = []
+                for col in analyze_columns:
+                    val = str(row.get(col, ''))
+                    
+                    # Apply retail-specific normalization
+                    if 'name' in col.lower():
+                        val = self._normalize_retail_name(val)
+                    elif 'email' in col.lower():
+                        val = self._normalize_retail_email(val)
+                    elif 'phone' in col.lower():
+                        val = self._normalize_phone(val)
+                    else:
+                        # Use ftfy to fix text encoding issues
+                        val = ftfy.fix_text(val)
+                        val = self._normalize_text(val)
+                    
+                    text_parts.append(val)
+                cleaned_texts.append(' '.join(text_parts))
         
         # Step 3: TF-IDF Vectorization for semantic similarity
         if self.tfidf_vectorizer is None or learn_from_data:
@@ -648,7 +775,7 @@ class DataCleaner:
             labels = clustering.fit_predict(distance_matrix)
         elif use_clustering:
             # For large datasets, work with sparse matrices directly
-            # Use a simpler threshold-based approach to avoid memory issues
+            # Use optimized chunked approach for memory efficiency
             similarity_matrix = None
             labels = np.full(n_samples, -1)  # Initialize all as noise
             
@@ -657,35 +784,78 @@ class DataCleaner:
             from scipy.sparse import csr_matrix
             from sklearn.metrics.pairwise import cosine_similarity
             
-            # Process in chunks to find similar items
-            chunk_size = 1000
+            # Optimize chunk size based on available performance libs
+            if PERFORMANCE_LIBS_AVAILABLE:
+                chunk_size = 2000  # Larger chunks with optimization
+            else:
+                chunk_size = 1000
+            
             threshold = 0.75  # 75% similarity threshold
             
-            for i in range(0, n_samples, chunk_size):
-                end_i = min(i + chunk_size, n_samples)
-                chunk_similarities = cosine_similarity(
-                    tfidf_matrix[i:end_i], 
-                    tfidf_matrix
+            # Use parallel processing if available
+            if PERFORMANCE_LIBS_AVAILABLE and n_samples > 5000:
+                # Parallel chunk processing for very large datasets
+                def process_chunk(start_idx, end_idx):
+                    chunk_sims = cosine_similarity(
+                        tfidf_matrix[start_idx:end_idx], 
+                        tfidf_matrix
+                    )
+                    pairs = []
+                    for local_idx in range(chunk_sims.shape[0]):
+                        global_idx = start_idx + local_idx
+                        similar_indices = np.where(chunk_sims[local_idx] >= threshold)[0]
+                        if len(similar_indices) > 1:
+                            pairs.append((global_idx, similar_indices))
+                    return pairs
+                
+                # Process chunks in parallel
+                chunk_ranges = [(i, min(i + chunk_size, n_samples)) 
+                               for i in range(0, n_samples, chunk_size)]
+                
+                results = Parallel(n_jobs=-1)(
+                    delayed(process_chunk)(start, end) 
+                    for start, end in chunk_ranges
                 )
                 
-                # Find pairs above threshold
-                for local_idx in range(chunk_similarities.shape[0]):
-                    global_idx = i + local_idx
-                    similar_indices = np.where(chunk_similarities[local_idx] >= threshold)[0]
-                    
-                    if len(similar_indices) > 1:  # Has duplicates
-                        # Assign same label to similar items
+                # Merge results
+                for chunk_pairs in results:
+                    for global_idx, similar_indices in chunk_pairs:
                         existing_labels = labels[similar_indices]
                         valid_labels = existing_labels[existing_labels != -1]
                         
                         if len(valid_labels) > 0:
-                            # Use existing label
                             label = valid_labels[0]
                         else:
-                            # Create new label
                             label = global_idx
                         
                         labels[similar_indices] = label
+            else:
+                # Sequential processing for smaller datasets
+                for i in range(0, n_samples, chunk_size):
+                    end_i = min(i + chunk_size, n_samples)
+                    chunk_similarities = cosine_similarity(
+                        tfidf_matrix[i:end_i], 
+                        tfidf_matrix
+                    )
+                    
+                    # Find pairs above threshold
+                    for local_idx in range(chunk_similarities.shape[0]):
+                        global_idx = i + local_idx
+                        similar_indices = np.where(chunk_similarities[local_idx] >= threshold)[0]
+                        
+                        if len(similar_indices) > 1:  # Has duplicates
+                            # Assign same label to similar items
+                            existing_labels = labels[similar_indices]
+                            valid_labels = existing_labels[existing_labels != -1]
+                            
+                            if len(valid_labels) > 0:
+                                # Use existing label
+                                label = valid_labels[0]
+                            else:
+                                # Create new label
+                                label = global_idx
+                            
+                            labels[similar_indices] = label
             
             # Group by clusters
             cluster_groups = {}
