@@ -558,6 +558,18 @@ class DataCleaner:
         if self.df is None:
             raise ValueError("No data loaded. Please load a CSV file first.")
         
+        # Check for extremely large datasets to prevent memory errors
+        n_rows = len(self.df)
+        if n_rows > 50000:
+            raise ValueError(
+                f"Dataset too large ({n_rows:,} rows) for ML Advanced detection.\n\n"
+                "ML Advanced clustering requires significant memory for large datasets.\n\n"
+                "Recommendations:\n"
+                "1. Use 'Smart AI (Automatic)' detection which is optimized for large datasets\n"
+                "2. Use 'Exact Match' or 'Fuzzy Match' for faster processing\n"
+                "3. Filter/sample your data to under 50,000 rows before using ML Advanced"
+            )
+        
         # Check if ML dependencies are available
         if not ML_AVAILABLE:
             raise ImportError(
@@ -615,19 +627,28 @@ class DataCleaner:
                 )
                 tfidf_matrix = self.tfidf_vectorizer.fit_transform(cleaned_texts)
         
-        # Step 4: Calculate similarity matrix
-        similarity_matrix = cosine_similarity(tfidf_matrix)
+        # Step 4: Calculate similarity matrix with memory optimization
+        # For large datasets, avoid creating full dense matrix
+        n_samples = tfidf_matrix.shape[0]
         
         # Step 5: Use DBSCAN clustering for pattern detection
         duplicate_groups = []
         
-        if use_clustering:
+        if use_clustering and n_samples < 5000:
+            # Only use full similarity matrix for smaller datasets
+            similarity_matrix = cosine_similarity(tfidf_matrix)
             # Convert similarity to distance (ensure non-negative)
             distance_matrix = np.clip(1 - similarity_matrix, 0, None)
             
             # Apply DBSCAN clustering
             clustering = DBSCAN(eps=0.25, min_samples=2, metric='precomputed')
             labels = clustering.fit_predict(distance_matrix)
+        elif use_clustering:
+            # For large datasets, use cosine distance directly without precomputing
+            # This is more memory efficient
+            clustering = DBSCAN(eps=0.25, min_samples=2, metric='cosine')
+            labels = clustering.fit_predict(tfidf_matrix.toarray())
+            similarity_matrix = None  # Don't create full matrix
             
             # Group by clusters
             cluster_groups = {}
@@ -645,9 +666,17 @@ class DataCleaner:
                         record = self.df.iloc[idx].to_dict()
                         
                         # Calculate average similarity within group
-                        similarities = [similarity_matrix[idx][other_idx] 
-                                      for other_idx in indices if other_idx != idx]
-                        avg_similarity = np.mean(similarities) * 100 if similarities else 100
+                        if similarity_matrix is not None:
+                            similarities = [similarity_matrix[idx][other_idx] 
+                                          for other_idx in indices if other_idx != idx]
+                            avg_similarity = np.mean(similarities) * 100 if similarities else 100
+                        else:
+                            # For large datasets, calculate similarity on-the-fly for the group only
+                            group_vectors = tfidf_matrix[indices]
+                            local_sim = cosine_similarity(group_vectors)
+                            idx_pos = indices.index(idx)
+                            similarities = [local_sim[idx_pos][i] for i in range(len(indices)) if i != idx_pos]
+                            avg_similarity = np.mean(similarities) * 100 if similarities else 100
                         
                         # Add phonetic matching if enabled
                         phonetic_score = 100

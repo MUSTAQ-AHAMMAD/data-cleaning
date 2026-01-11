@@ -50,22 +50,38 @@ st.markdown("""
     }
     
     /* Sidebar styling */
-    [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #2d3e50 0%, #1a252f 100%);
+    section[data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #2d3e50 0%, #1a252f 100%) !important;
     }
     
-    [data-testid="stSidebar"] * {
+    section[data-testid="stSidebar"] * {
         color: #ffffff !important;
     }
     
-    [data-testid="stSidebar"] h2,
-    [data-testid="stSidebar"] h3 {
+    section[data-testid="stSidebar"] h1,
+    section[data-testid="stSidebar"] h2,
+    section[data-testid="stSidebar"] h3,
+    section[data-testid="stSidebar"] h4,
+    section[data-testid="stSidebar"] h5,
+    section[data-testid="stSidebar"] h6 {
         color: #ffffff !important;
         font-weight: 700 !important;
     }
     
+    section[data-testid="stSidebar"] p,
+    section[data-testid="stSidebar"] span,
+    section[data-testid="stSidebar"] label,
+    section[data-testid="stSidebar"] div {
+        color: #ffffff !important;
+    }
+    
+    /* Override Streamlit's default sidebar text colors */
+    .css-1d391kg, .css-1v3fvcr, .css-10trblm {
+        color: #ffffff !important;
+    }
+    
     /* Navigation items styling */
-    [data-testid="stSidebar"] .stRadio > label {
+    section[data-testid="stSidebar"] .stRadio > label {
         background: rgba(255, 255, 255, 0.15) !important;
         padding: 14px 16px !important;
         border-radius: 10px !important;
@@ -74,9 +90,14 @@ st.markdown("""
         border-left: 4px solid transparent !important;
         font-weight: 600 !important;
         font-size: 1.05rem !important;
+        color: #ffffff !important;
     }
     
-    [data-testid="stSidebar"] .stRadio > label:hover {
+    section[data-testid="stSidebar"] .stRadio > label * {
+        color: #ffffff !important;
+    }
+    
+    section[data-testid="stSidebar"] .stRadio > label:hover {
         background: rgba(255, 255, 255, 0.25) !important;
         transform: translateX(8px) !important;
         border-left: 4px solid #667eea !important;
@@ -84,11 +105,15 @@ st.markdown("""
     }
     
     /* Active navigation item */
-    [data-testid="stSidebar"] .stRadio > label[data-checked="true"] {
+    section[data-testid="stSidebar"] .stRadio > label[data-checked="true"] {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
         border-left: 4px solid #ffd700 !important;
         font-weight: 700 !important;
         box-shadow: 0 4px 16px rgba(102, 126, 234, 0.5) !important;
+    }
+    
+    section[data-testid="stSidebar"] .stRadio > label[data-checked="true"] * {
+        color: #ffffff !important;
     }
     
     /* Header styles */
