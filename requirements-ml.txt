@@ -17,5 +17,24 @@ ftfy>=6.1.0
 # Note: On Windows, this may require Visual Studio Build Tools
 recordlinkage>=0.15.0
 
+# Performance Optimization Libraries
+# These significantly speed up ML operations
+numba>=0.58.0           # JIT compilation for numerical operations - 10-100x speedup
+joblib>=1.3.0           # Parallel processing for sklearn
+Cython>=3.0.0           # Compile Python to C for speed
+
+# Advanced ML Libraries for Better Accuracy
+xgboost>=2.0.0          # Gradient boosting for classification (retail duplicate patterns)
+lightgbm>=4.1.0         # Fast gradient boosting - optimized for speed
+imbalanced-learn>=0.11.0  # Handle imbalanced datasets (more unique than duplicate)
+
+# Name Matching & Entity Resolution (Retail Specific)
+nameparser>=1.1.0       # Parse person/company names accurately
+python-stdnum>=1.19     # Validate customer IDs, phone numbers
+email-validator>=2.1.0  # Validate email addresses
+
+# Retail-Specific Data Processing
+usaddress>=0.5.0        # Parse US addresses (if applicable)
+
 # Dedupe Library (optional - currently not used in code)
 # dedupe>=2.0.0
