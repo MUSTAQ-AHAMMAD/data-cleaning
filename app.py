@@ -20,42 +20,284 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for better UI
+# Custom CSS for modern, professional UI
 st.markdown("""
     <style>
+    /* Import modern font */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    /* Global styles */
+    * {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    
+    /* Main container */
+    .main {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+    
+    /* Sidebar styling */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%);
+    }
+    
+    [data-testid="stSidebar"] * {
+        color: white !important;
+    }
+    
+    [data-testid="stSidebar"] .stRadio > label {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 12px;
+        border-radius: 8px;
+        margin: 4px 0;
+        transition: all 0.3s ease;
+    }
+    
+    [data-testid="stSidebar"] .stRadio > label:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateX(5px);
+    }
+    
+    /* Header styles */
     .main-header {
-        font-size: 3rem;
-        font-weight: bold;
-        color: #1f77b4;
+        font-size: 2.8rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
         text-align: center;
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
+        letter-spacing: -1px;
     }
+    
     .sub-header {
-        font-size: 1.5rem;
-        font-weight: bold;
-        color: #2c3e50;
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #2d3748;
         margin-top: 2rem;
-        margin-bottom: 1rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 3px solid #667eea;
+        display: inline-block;
     }
-    .metric-card {
-        background-color: #f0f2f6;
-        padding: 1rem;
-        border-radius: 0.5rem;
+    
+    .subtitle {
         text-align: center;
+        color: #4a5568;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+        font-weight: 400;
     }
-    .success-box {
-        background-color: #d4edda;
-        border: 1px solid #c3e6cb;
-        border-radius: 0.5rem;
-        padding: 1rem;
+    
+    /* Card styles */
+    .card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
         margin: 1rem 0;
+        transition: all 0.3s ease;
     }
-    .info-box {
-        background-color: #d1ecf1;
-        border: 1px solid #bee5eb;
-        border-radius: 0.5rem;
+    
+    .card:hover {
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    /* Metric cards */
+    .metric-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    
+    .metric-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0.5rem 0;
+    }
+    
+    .metric-label {
+        font-size: 0.95rem;
+        opacity: 0.9;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    /* Alert boxes */
+    .stAlert {
+        border-radius: 12px;
+        border: none;
+        padding: 1rem 1.5rem;
+    }
+    
+    /* Success styling */
+    [data-baseweb="notification"] [kind="success"] {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        color: white;
+    }
+    
+    /* Info styling */
+    [data-baseweb="notification"] [kind="info"] {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+    }
+    
+    /* Warning styling */
+    [data-baseweb="notification"] [kind="warning"] {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        color: white;
+    }
+    
+    /* Button styling */
+    .stButton > button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.6rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    /* Primary button */
+    .stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    
+    /* Input fields */
+    .stTextInput > div > div > input,
+    .stSelectbox > div > div,
+    .stMultiSelect > div > div {
+        border-radius: 8px;
+        border: 2px solid #e2e8f0;
+        transition: all 0.3s ease;
+    }
+    
+    .stTextInput > div > div > input:focus,
+    .stSelectbox > div > div:focus,
+    .stMultiSelect > div > div:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    /* Tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background: white;
+        padding: 8px;
+        border-radius: 12px;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        border-radius: 8px;
+        padding: 12px 24px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    /* Dataframe styling */
+    .stDataFrame {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+    }
+    
+    /* Expander */
+    .streamlit-expanderHeader {
+        background: white;
+        border-radius: 8px;
+        border: 2px solid #e2e8f0;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .streamlit-expanderHeader:hover {
+        border-color: #667eea;
+        background: #f7fafc;
+    }
+    
+    /* Progress bar */
+    .stProgress > div > div > div {
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    /* Slider */
+    .stSlider > div > div > div {
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    /* File uploader */
+    [data-testid="stFileUploader"] {
+        background: white;
+        border-radius: 12px;
+        border: 2px dashed #cbd5e0;
+        padding: 2rem;
+        transition: all 0.3s ease;
+    }
+    
+    [data-testid="stFileUploader"]:hover {
+        border-color: #667eea;
+        background: #f7fafc;
+    }
+    
+    /* Metrics */
+    [data-testid="stMetric"] {
+        background: white;
         padding: 1rem;
-        margin: 1rem 0;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    
+    [data-testid="stMetricValue"] {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+    
+    /* Checkbox and Radio */
+    .stCheckbox, .stRadio {
+        background: white;
+        padding: 0.5rem;
+        border-radius: 8px;
+    }
+    
+    /* Hide Streamlit branding */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
     }
     </style>
 """, unsafe_allow_html=True)
@@ -71,31 +313,37 @@ if 'cleaner' not in st.session_state:
 def main():
     """Main application function."""
     
-    # Header
-    st.markdown('<div class="main-header">🧹 AI CRM - Data Cleaning System</div>', unsafe_allow_html=True)
-    st.markdown("### Efficiently clean your CSV data and remove duplicate users with AI-powered detection")
+    # Header with modern design
+    col1, col2, col3 = st.columns([1, 3, 1])
+    with col2:
+        st.markdown('<div class="main-header">🧹 AI CRM - Data Cleaning System</div>', unsafe_allow_html=True)
+        st.markdown('<p class="subtitle">Efficiently clean your CSV data and remove duplicate users with AI-powered detection</p>', unsafe_allow_html=True)
     
-    # Sidebar
+    # Sidebar with modern styling
     with st.sidebar:
-        st.title("🧹 AI CRM")
+        st.markdown("## 🧹 AI CRM")
         st.markdown("---")
-        st.title("Navigation")
+        st.markdown("### 📍 Navigation")
         page = st.radio(
             "Select Page",
-            ["📤 Upload Data", "🔍 Detect Duplicates", "🧹 Clean Data", "📊 Reports & Analytics", "⬇️ Export Data"]
+            ["📤 Upload Data", "🔍 Detect Duplicates", "🧹 Clean Data", "📊 Reports & Analytics", "⬇️ Export Data"],
+            label_visibility="collapsed"
         )
         
         st.markdown("---")
-        st.markdown("### Quick Stats")
+        st.markdown("### 📊 Quick Stats")
         if st.session_state.data_loaded:
             summary = st.session_state.cleaner.get_data_summary()
-            st.metric("Total Records", summary.get('total_rows', 0))
-            st.metric("Total Columns", summary.get('total_columns', 0))
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric("Records", f"{summary.get('total_rows', 0):,}")
+            with col2:
+                st.metric("Columns", summary.get('total_columns', 0))
             if st.session_state.duplicates_detected:
                 report = st.session_state.cleaner.get_cleaning_report()
-                st.metric("Duplicates Found", report.get('duplicates_found', 0))
+                st.metric("Duplicates", report.get('duplicates_found', 0), delta=None)
         else:
-            st.info("No data loaded yet")
+            st.info("💡 No data loaded yet")
     
     # Main content based on selected page
     if page == "📤 Upload Data":
@@ -113,9 +361,15 @@ def upload_data_page():
     """Page for uploading CSV data."""
     st.markdown('<div class="sub-header">📤 Upload Your Data</div>', unsafe_allow_html=True)
     
-    st.info("Upload a CSV file containing user data. The system will analyze it for duplicates and help you clean the data.")
+    st.markdown("""
+    <div class="card">
+        <p style="font-size: 1.1rem; color: #4a5568;">
+            Upload a CSV file containing user data. Our AI-powered system will analyze it for duplicates and help you clean the data efficiently.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    uploaded_file = st.file_uploader("Choose a CSV file", type=['csv'])
+    uploaded_file = st.file_uploader("Choose a CSV file", type=['csv'], help="Maximum file size: 200MB")
     
     if uploaded_file is not None:
         try:
@@ -126,34 +380,60 @@ def upload_data_page():
             st.session_state.duplicates_detected = False
             st.session_state.cleaning_complete = False
             
-            st.success(f"✅ File uploaded successfully! Loaded {len(df)} records with {len(df.columns)} columns.")
+            st.success(f"✨ File uploaded successfully! Loaded **{len(df):,}** records with **{len(df.columns)}** columns.")
             
-            # Display data preview
-            st.markdown("### Data Preview")
-            st.dataframe(df.head(10), use_container_width=True)
+            # Display data preview with modern card
+            st.markdown("### 📋 Data Preview")
+            st.markdown('<div class="card">', unsafe_allow_html=True)
+            st.dataframe(df.head(10), use_container_width=True, height=400)
+            st.markdown('</div>', unsafe_allow_html=True)
             
-            # Display column information
+            # Display column information in modern layout
             col1, col2 = st.columns(2)
             
             with col1:
-                st.markdown("### Column Information")
+                st.markdown("### 📊 Column Information")
+                st.markdown('<div class="card">', unsafe_allow_html=True)
                 col_info = pd.DataFrame({
                     'Column': df.columns,
                     'Type': df.dtypes.astype(str),
                     'Non-Null': df.count(),
-                    'Null Count': df.isnull().sum()
+                    'Null %': (df.isnull().sum() / len(df) * 100).round(2)
                 })
-                st.dataframe(col_info, use_container_width=True)
+                st.dataframe(col_info, use_container_width=True, height=400)
+                st.markdown('</div>', unsafe_allow_html=True)
             
             with col2:
-                st.markdown("### Data Quality Metrics")
+                st.markdown("### 🎯 Data Quality Metrics")
                 total_cells = len(df) * len(df.columns)
                 null_cells = df.isnull().sum().sum()
                 completeness = ((total_cells - null_cells) / total_cells) * 100 if total_cells > 0 else 0
                 
-                st.metric("Data Completeness", f"{completeness:.2f}%")
-                st.metric("Total Cells", f"{total_cells:,}")
-                st.metric("Missing Values", f"{null_cells:,}")
+                # Modern metric cards
+                metric_col1, metric_col2 = st.columns(2)
+                with metric_col1:
+                    st.markdown(f"""
+                    <div class="metric-card">
+                        <div class="metric-label">Completeness</div>
+                        <div class="metric-value">{completeness:.1f}%</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                with metric_col2:
+                    st.markdown(f"""
+                    <div class="metric-card">
+                        <div class="metric-label">Total Cells</div>
+                        <div class="metric-value">{total_cells:,}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                st.markdown(f"""
+                <div class="card" style="margin-top: 1rem; text-align: center;">
+                    <p style="color: #4a5568; margin-bottom: 0.5rem;">Missing Values</p>
+                    <p style="font-size: 2rem; font-weight: 700; color: {'#e53e3e' if null_cells > 0 else '#38a169'}; margin: 0;">
+                        {null_cells:,}
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
                 
                 # Visualize missing data
                 missing_data = df.isnull().sum()
@@ -162,17 +442,23 @@ def upload_data_page():
                         x=missing_data.index,
                         y=missing_data.values,
                         labels={'x': 'Column', 'y': 'Missing Values'},
-                        title='Missing Values by Column'
+                        title='Missing Values by Column',
+                        color_discrete_sequence=['#667eea']
+                    )
+                    fig.update_layout(
+                        plot_bgcolor='rgba(0,0,0,0)',
+                        paper_bgcolor='rgba(0,0,0,0)',
+                        font=dict(family='Inter, sans-serif')
                     )
                     st.plotly_chart(fig, use_container_width=True)
             
         except Exception as e:
             st.error(f"❌ Error loading file: {str(e)}")
     
-    # Sample data generator
+    # Sample data generator with modern design
     st.markdown("---")
-    st.markdown("### Don't have a CSV file? Generate sample data")
-    if st.button("Generate Sample Data"):
+    st.markdown("### 🎲 Don't have a CSV file? Generate sample data")
+    if st.button("🚀 Generate Sample Data", use_container_width=False):
         sample_df = generate_sample_data()
         st.session_state.cleaner.load_dataframe(sample_df)
         st.session_state.data_loaded = True
@@ -192,21 +478,34 @@ def detect_duplicates_page():
     cleaner = st.session_state.cleaner
     df = cleaner.df
     
-    st.info("Choose a duplicate detection method and configure the parameters.")
+    st.markdown("""
+    <div class="card">
+        <p style="font-size: 1.1rem; color: #4a5568;">
+            Choose a duplicate detection method and configure the parameters. Our AI-powered algorithms will analyze your data intelligently.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    # Detection method selection
+    # Detection method selection with modern design
+    st.markdown("### 🎯 Select Detection Method")
     detection_method = st.radio(
-        "Select Detection Method",
+        "detection_method",
         ["ML Advanced (Learning)", "Smart AI (Automatic)", "Exact Match", "Fuzzy Match (AI-Powered)"],
-        help="ML Advanced uses machine learning that learns and improves with data. Smart AI automatically detects duplicates like a human would. Exact Match finds identical records. Fuzzy Match uses AI to find similar records."
+        help="ML Advanced uses machine learning that learns and improves with data. Smart AI automatically detects duplicates like a human would. Exact Match finds identical records. Fuzzy Match uses AI to find similar records.",
+        label_visibility="collapsed"
     )
     
     # Column selection
-    st.markdown("### Configure Detection")
+    st.markdown("### ⚙️ Configure Detection")
     available_columns = list(df.columns)
     
     if detection_method == "ML Advanced (Learning)":
-        st.success("🧠 ML Advanced uses cutting-edge machine learning algorithms that learn patterns from your data and get better with each use!")
+        st.markdown("""
+        <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <h3 style="color: white; margin-top: 0;">🧠 ML Advanced Detection</h3>
+            <p style="opacity: 0.95;">Uses cutting-edge machine learning algorithms that learn patterns from your data and get better with each use!</p>
+        </div>
+        """, unsafe_allow_html=True)
         
         st.markdown("""
         **Advanced Features:**
