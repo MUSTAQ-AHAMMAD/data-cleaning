@@ -1,19 +1,30 @@
+# Core Dependencies for Data Cleaning Application
+# These packages work on all platforms without compilation
+
+# Web Framework
 streamlit>=1.30.0
+
+# Data Processing
 pandas>=2.0.0
 numpy>=1.24.0
+
+# String Matching (core features)
 python-Levenshtein>=0.21.0
 fuzzywuzzy>=0.18.0
 rapidfuzz>=3.0.0
+
+# Excel Support
 openpyxl>=3.1.0
+
+# Visualization
 plotly>=5.18.0
+
+# Testing
 pytest>=7.4.0
 
-# Advanced AI/ML packages for learning-based data cleaning
-scikit-learn>=1.3.0
-scipy>=1.11.0
-dedupe>=2.0.0
-recordlinkage>=0.15.0
-jellyfish>=1.0.0
-phonetics>=1.0.0
-ftfy>=6.1.0
+# Character Encoding
 chardet>=5.0.0
+
+# Optional: Install ML dependencies for advanced features
+# pip install -r requirements-ml.txt
+

@@ -1,0 +1,21 @@
+# Optional ML Dependencies for Advanced Features
+# These packages provide enhanced ML-based duplicate detection
+# Some require compilation and may need build tools on Windows
+
+# Machine Learning Core
+scikit-learn>=1.3.0
+scipy>=1.11.0
+
+# Advanced String Matching & Phonetics
+jellyfish>=1.0.0
+phonetics>=1.0.0
+
+# Text Processing
+ftfy>=6.1.0
+
+# Record Linkage (requires compilation)
+# Note: On Windows, this may require Visual Studio Build Tools
+recordlinkage>=0.15.0
+
+# Dedupe Library (optional - currently not used in code)
+# dedupe>=2.0.0
