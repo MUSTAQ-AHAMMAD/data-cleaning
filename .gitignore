@@ -46,3 +46,10 @@ Thumbs.db
 # Logs
 *.log
 logs/
+
+# Screenshots (uploaded to GitHub, no need to commit large files)
+screenshots/
+
+# ML Models (learned patterns - local to each installation)
+ml_models/
+*.pkl

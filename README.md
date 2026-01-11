@@ -1,16 +1,22 @@
 # 🧹 AI CRM - Data Cleaning System
 
-A powerful, user-friendly Python-based CRM application for efficient CSV data cleaning with AI-powered duplicate detection.
+A powerful, user-friendly Python-based CRM application for efficient CSV data cleaning with advanced AI-powered duplicate detection that works like a human analyst.
 
 ## 🌟 Features
 
 ### 🎯 Core Capabilities
-- **AI-Powered Duplicate Detection**: Uses fuzzy matching algorithms to detect similar records
+- **ML Advanced Detection (NEWEST!)**: Machine learning system that learns and improves with every use 🚀
+- **Smart AI Detection**: Automatically detects duplicates like a human would, with confidence scoring
+- **Learning Persistence**: AI remembers patterns and gets better with each cleaning session
+- **Advanced Algorithms**: TF-IDF, DBSCAN clustering, phonetic matching, record linkage
+- **Automated Column Analysis**: AI identifies the most relevant columns for duplicate detection
+- **Separated Data Export**: Clean and uncleaned data exported separately for manual review
+- **AI-Powered Fuzzy Matching**: Uses advanced algorithms to detect similar records with typos or variations
 - **Exact Match Detection**: Find identical duplicate records across specified columns
 - **Smart Data Cleaning**: Remove duplicates while preserving data integrity
 - **Missing Value Handling**: Multiple strategies for handling missing data
 - **Data Standardization**: Normalize text data (lowercase, uppercase, title case, trim)
-- **Real-time Reporting**: Comprehensive analytics and insights
+- **Real-time Reporting**: Comprehensive analytics and insights with confidence scores
 
 ### 📊 User Interface
 - **Web-Based Dashboard**: Built with Streamlit for easy access
@@ -18,19 +24,40 @@ A powerful, user-friendly Python-based CRM application for efficient CSV data cl
 - **Visual Analytics**: Charts and graphs showing data quality metrics
 - **Multi-Format Export**: Export cleaned data as CSV or Excel
 - **Progress Tracking**: Real-time updates on cleaning operations
+- **Confidence Indicators**: Visual indicators for high/low confidence matches
 
 ### 🔍 Duplicate Detection Methods
 
-1. **Exact Match**
-   - Identifies identical records
-   - Fast and efficient
-   - Perfect for finding exact duplicates
+1. **ML Advanced (Learning) - NEWEST!** 🚀
+   - **Machine learning that learns and improves with each use**
+   - TF-IDF vectorization for semantic similarity
+   - DBSCAN clustering for automatic pattern detection
+   - Phonetic matching (Soundex, Metaphone) for name variations
+   - Record linkage algorithms for verification
+   - **Learns from each cleaning session** - gets smarter over time
+   - Persists learned models for future use
+   - Handles complex duplicate scenarios automatically
+   - Best for: Organizations processing data regularly that want AI to learn their specific patterns
 
-2. **Fuzzy Match (AI-Powered)**
+2. **Smart AI (Automatic)** ⭐
+   - Automatically identifies key columns (IDs, names, emails, phones)
+   - Uses different matching strategies based on field types
+   - Weighted scoring system prioritizes important fields
+   - Confidence scoring for each match
+   - Separates high-confidence from low-confidence matches
+   - Works like a human data analyst would
+   - Ideal for automated processing with manual review option
+
+3. **Fuzzy Match (AI-Powered)**
    - Uses Levenshtein distance algorithm
    - Detects similar records with typos or variations
    - Configurable similarity threshold (50-100%)
    - Ideal for real-world messy data
+
+4. **Exact Match**
+   - Identifies identical records
+   - Fast and efficient
+   - Perfect for finding exact duplicates
 
 ## 🚀 Quick Start
 

@@ -20,42 +20,284 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for better UI
+# Custom CSS for modern, professional UI
 st.markdown("""
     <style>
+    /* Import modern font */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    /* Global styles */
+    * {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    
+    /* Main container */
+    .main {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+    
+    /* Sidebar styling */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%);
+    }
+    
+    [data-testid="stSidebar"] * {
+        color: white !important;
+    }
+    
+    [data-testid="stSidebar"] .stRadio > label {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 12px;
+        border-radius: 8px;
+        margin: 4px 0;
+        transition: all 0.3s ease;
+    }
+    
+    [data-testid="stSidebar"] .stRadio > label:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateX(5px);
+    }
+    
+    /* Header styles */
     .main-header {
-        font-size: 3rem;
-        font-weight: bold;
-        color: #1f77b4;
+        font-size: 2.8rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
         text-align: center;
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
+        letter-spacing: -1px;
     }
+    
     .sub-header {
-        font-size: 1.5rem;
-        font-weight: bold;
-        color: #2c3e50;
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #2d3748;
         margin-top: 2rem;
-        margin-bottom: 1rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 3px solid #667eea;
+        display: inline-block;
     }
-    .metric-card {
-        background-color: #f0f2f6;
-        padding: 1rem;
-        border-radius: 0.5rem;
+    
+    .subtitle {
         text-align: center;
+        color: #4a5568;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+        font-weight: 400;
     }
-    .success-box {
-        background-color: #d4edda;
-        border: 1px solid #c3e6cb;
-        border-radius: 0.5rem;
-        padding: 1rem;
+    
+    /* Card styles */
+    .card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
         margin: 1rem 0;
+        transition: all 0.3s ease;
     }
-    .info-box {
-        background-color: #d1ecf1;
-        border: 1px solid #bee5eb;
-        border-radius: 0.5rem;
+    
+    .card:hover {
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    /* Metric cards */
+    .metric-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    
+    .metric-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0.5rem 0;
+    }
+    
+    .metric-label {
+        font-size: 0.95rem;
+        opacity: 0.9;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    /* Alert boxes */
+    .stAlert {
+        border-radius: 12px;
+        border: none;
+        padding: 1rem 1.5rem;
+    }
+    
+    /* Success styling */
+    [data-baseweb="notification"] [kind="success"] {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        color: white;
+    }
+    
+    /* Info styling */
+    [data-baseweb="notification"] [kind="info"] {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+    }
+    
+    /* Warning styling */
+    [data-baseweb="notification"] [kind="warning"] {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        color: white;
+    }
+    
+    /* Button styling */
+    .stButton > button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.6rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    /* Primary button */
+    .stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    
+    /* Input fields */
+    .stTextInput > div > div > input,
+    .stSelectbox > div > div,
+    .stMultiSelect > div > div {
+        border-radius: 8px;
+        border: 2px solid #e2e8f0;
+        transition: all 0.3s ease;
+    }
+    
+    .stTextInput > div > div > input:focus,
+    .stSelectbox > div > div:focus,
+    .stMultiSelect > div > div:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    /* Tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background: white;
+        padding: 8px;
+        border-radius: 12px;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        border-radius: 8px;
+        padding: 12px 24px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    /* Dataframe styling */
+    .stDataFrame {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+    }
+    
+    /* Expander */
+    .streamlit-expanderHeader {
+        background: white;
+        border-radius: 8px;
+        border: 2px solid #e2e8f0;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .streamlit-expanderHeader:hover {
+        border-color: #667eea;
+        background: #f7fafc;
+    }
+    
+    /* Progress bar */
+    .stProgress > div > div > div {
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    /* Slider */
+    .stSlider > div > div > div {
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    /* File uploader */
+    [data-testid="stFileUploader"] {
+        background: white;
+        border-radius: 12px;
+        border: 2px dashed #cbd5e0;
+        padding: 2rem;
+        transition: all 0.3s ease;
+    }
+    
+    [data-testid="stFileUploader"]:hover {
+        border-color: #667eea;
+        background: #f7fafc;
+    }
+    
+    /* Metrics */
+    [data-testid="stMetric"] {
+        background: white;
         padding: 1rem;
-        margin: 1rem 0;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    
+    [data-testid="stMetricValue"] {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+    
+    /* Checkbox and Radio */
+    .stCheckbox, .stRadio {
+        background: white;
+        padding: 0.5rem;
+        border-radius: 8px;
+    }
+    
+    /* Hide Streamlit branding */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
     }
     </style>
 """, unsafe_allow_html=True)
@@ -71,31 +313,37 @@ if 'cleaner' not in st.session_state:
 def main():
     """Main application function."""
     
-    # Header
-    st.markdown('<div class="main-header">🧹 AI CRM - Data Cleaning System</div>', unsafe_allow_html=True)
-    st.markdown("### Efficiently clean your CSV data and remove duplicate users with AI-powered detection")
+    # Header with modern design
+    col1, col2, col3 = st.columns([1, 3, 1])
+    with col2:
+        st.markdown('<div class="main-header">🧹 AI CRM - Data Cleaning System</div>', unsafe_allow_html=True)
+        st.markdown('<p class="subtitle">Efficiently clean your CSV data and remove duplicate users with AI-powered detection</p>', unsafe_allow_html=True)
     
-    # Sidebar
+    # Sidebar with modern styling
     with st.sidebar:
-        st.title("🧹 AI CRM")
+        st.markdown("## 🧹 AI CRM")
         st.markdown("---")
-        st.title("Navigation")
+        st.markdown("### 📍 Navigation")
         page = st.radio(
             "Select Page",
-            ["📤 Upload Data", "🔍 Detect Duplicates", "🧹 Clean Data", "📊 Reports & Analytics", "⬇️ Export Data"]
+            ["📤 Upload Data", "🔍 Detect Duplicates", "🧹 Clean Data", "📊 Reports & Analytics", "⬇️ Export Data"],
+            label_visibility="collapsed"
         )
         
         st.markdown("---")
-        st.markdown("### Quick Stats")
+        st.markdown("### 📊 Quick Stats")
         if st.session_state.data_loaded:
             summary = st.session_state.cleaner.get_data_summary()
-            st.metric("Total Records", summary.get('total_rows', 0))
-            st.metric("Total Columns", summary.get('total_columns', 0))
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric("Records", f"{summary.get('total_rows', 0):,}")
+            with col2:
+                st.metric("Columns", summary.get('total_columns', 0))
             if st.session_state.duplicates_detected:
                 report = st.session_state.cleaner.get_cleaning_report()
-                st.metric("Duplicates Found", report.get('duplicates_found', 0))
+                st.metric("Duplicates", report.get('duplicates_found', 0), delta=None)
         else:
-            st.info("No data loaded yet")
+            st.info("💡 No data loaded yet")
     
     # Main content based on selected page
     if page == "📤 Upload Data":
@@ -113,9 +361,15 @@ def upload_data_page():
     """Page for uploading CSV data."""
     st.markdown('<div class="sub-header">📤 Upload Your Data</div>', unsafe_allow_html=True)
     
-    st.info("Upload a CSV file containing user data. The system will analyze it for duplicates and help you clean the data.")
+    st.markdown("""
+    <div class="card">
+        <p style="font-size: 1.1rem; color: #4a5568;">
+            Upload a CSV file containing user data. Our AI-powered system will analyze it for duplicates and help you clean the data efficiently.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    uploaded_file = st.file_uploader("Choose a CSV file", type=['csv'])
+    uploaded_file = st.file_uploader("Choose a CSV file", type=['csv'], help="Maximum file size: 200MB")
     
     if uploaded_file is not None:
         try:
@@ -126,34 +380,60 @@ def upload_data_page():
             st.session_state.duplicates_detected = False
             st.session_state.cleaning_complete = False
             
-            st.success(f"✅ File uploaded successfully! Loaded {len(df)} records with {len(df.columns)} columns.")
+            st.success(f"✨ File uploaded successfully! Loaded **{len(df):,}** records with **{len(df.columns)}** columns.")
             
-            # Display data preview
-            st.markdown("### Data Preview")
-            st.dataframe(df.head(10), use_container_width=True)
+            # Display data preview with modern card
+            st.markdown("### 📋 Data Preview")
+            st.markdown('<div class="card">', unsafe_allow_html=True)
+            st.dataframe(df.head(10), use_container_width=True, height=400)
+            st.markdown('</div>', unsafe_allow_html=True)
             
-            # Display column information
+            # Display column information in modern layout
             col1, col2 = st.columns(2)
             
             with col1:
-                st.markdown("### Column Information")
+                st.markdown("### 📊 Column Information")
+                st.markdown('<div class="card">', unsafe_allow_html=True)
                 col_info = pd.DataFrame({
                     'Column': df.columns,
                     'Type': df.dtypes.astype(str),
                     'Non-Null': df.count(),
-                    'Null Count': df.isnull().sum()
+                    'Null %': (df.isnull().sum() / len(df) * 100).round(2)
                 })
-                st.dataframe(col_info, use_container_width=True)
+                st.dataframe(col_info, use_container_width=True, height=400)
+                st.markdown('</div>', unsafe_allow_html=True)
             
             with col2:
-                st.markdown("### Data Quality Metrics")
+                st.markdown("### 🎯 Data Quality Metrics")
                 total_cells = len(df) * len(df.columns)
                 null_cells = df.isnull().sum().sum()
                 completeness = ((total_cells - null_cells) / total_cells) * 100 if total_cells > 0 else 0
                 
-                st.metric("Data Completeness", f"{completeness:.2f}%")
-                st.metric("Total Cells", f"{total_cells:,}")
-                st.metric("Missing Values", f"{null_cells:,}")
+                # Modern metric cards
+                metric_col1, metric_col2 = st.columns(2)
+                with metric_col1:
+                    st.markdown(f"""
+                    <div class="metric-card">
+                        <div class="metric-label">Completeness</div>
+                        <div class="metric-value">{completeness:.1f}%</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                with metric_col2:
+                    st.markdown(f"""
+                    <div class="metric-card">
+                        <div class="metric-label">Total Cells</div>
+                        <div class="metric-value">{total_cells:,}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                st.markdown(f"""
+                <div class="card" style="margin-top: 1rem; text-align: center;">
+                    <p style="color: #4a5568; margin-bottom: 0.5rem;">Missing Values</p>
+                    <p style="font-size: 2rem; font-weight: 700; color: {'#e53e3e' if null_cells > 0 else '#38a169'}; margin: 0;">
+                        {null_cells:,}
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
                 
                 # Visualize missing data
                 missing_data = df.isnull().sum()
@@ -162,17 +442,23 @@ def upload_data_page():
                         x=missing_data.index,
                         y=missing_data.values,
                         labels={'x': 'Column', 'y': 'Missing Values'},
-                        title='Missing Values by Column'
+                        title='Missing Values by Column',
+                        color_discrete_sequence=['#667eea']
+                    )
+                    fig.update_layout(
+                        plot_bgcolor='rgba(0,0,0,0)',
+                        paper_bgcolor='rgba(0,0,0,0)',
+                        font=dict(family='Inter, sans-serif')
                     )
                     st.plotly_chart(fig, use_container_width=True)
             
         except Exception as e:
             st.error(f"❌ Error loading file: {str(e)}")
     
-    # Sample data generator
+    # Sample data generator with modern design
     st.markdown("---")
-    st.markdown("### Don't have a CSV file? Generate sample data")
-    if st.button("Generate Sample Data"):
+    st.markdown("### 🎲 Don't have a CSV file? Generate sample data")
+    if st.button("🚀 Generate Sample Data", use_container_width=False):
         sample_df = generate_sample_data()
         st.session_state.cleaner.load_dataframe(sample_df)
         st.session_state.data_loaded = True
@@ -192,20 +478,224 @@ def detect_duplicates_page():
     cleaner = st.session_state.cleaner
     df = cleaner.df
     
-    st.info("Choose a duplicate detection method and configure the parameters.")
+    st.markdown("""
+    <div class="card">
+        <p style="font-size: 1.1rem; color: #4a5568;">
+            Choose a duplicate detection method and configure the parameters. Our AI-powered algorithms will analyze your data intelligently.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    # Detection method selection
+    # Detection method selection with modern design
+    st.markdown("### 🎯 Select Detection Method")
     detection_method = st.radio(
-        "Select Detection Method",
-        ["Exact Match", "Fuzzy Match (AI-Powered)"],
-        help="Exact Match finds identical records. Fuzzy Match uses AI to find similar records."
+        "detection_method",
+        ["ML Advanced (Learning)", "Smart AI (Automatic)", "Exact Match", "Fuzzy Match (AI-Powered)"],
+        help="ML Advanced uses machine learning that learns and improves with data. Smart AI automatically detects duplicates like a human would. Exact Match finds identical records. Fuzzy Match uses AI to find similar records.",
+        label_visibility="collapsed"
     )
     
     # Column selection
-    st.markdown("### Select Columns to Compare")
+    st.markdown("### ⚙️ Configure Detection")
     available_columns = list(df.columns)
     
-    if detection_method == "Exact Match":
+    if detection_method == "ML Advanced (Learning)":
+        st.markdown("""
+        <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <h3 style="color: white; margin-top: 0;">🧠 ML Advanced Detection</h3>
+            <p style="opacity: 0.95;">Uses cutting-edge machine learning algorithms that learn patterns from your data and get better with each use!</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        **Advanced Features:**
+        - 🎯 TF-IDF vectorization for semantic similarity
+        - 🔬 DBSCAN clustering for pattern detection
+        - 🗣️ Phonetic matching (Soundex, Metaphone) for name variations
+        - 🔗 Record linkage algorithms
+        - 📈 Learns from each cleaning session and improves over time
+        """)
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            learn_mode = st.checkbox("Learn from this data", value=True,
+                                    help="AI will learn patterns from this data to improve future performance")
+        with col2:
+            use_phonetic = st.checkbox("Use phonetic matching", value=True,
+                                      help="Match names that sound similar (e.g., 'Smith' and 'Smythe')")
+        with col3:
+            use_clustering = st.checkbox("Use ML clustering", value=True,
+                                        help="Use advanced clustering algorithms to find duplicate patterns")
+        
+        if st.button("🚀 Run ML Advanced Detection", type="primary"):
+            with st.spinner("🧠 ML is analyzing your data and learning patterns..."):
+                try:
+                    duplicate_groups, num_duplicates, uncleaned_df = cleaner.detect_duplicates_ml_advanced(
+                        learn_from_data=learn_mode,
+                        use_phonetic=use_phonetic,
+                        use_clustering=use_clustering
+                    )
+                    
+                    st.session_state.duplicates_detected = True
+                    st.session_state.duplicate_groups = duplicate_groups
+                    st.session_state.uncleaned_data = uncleaned_df
+                    st.session_state.detection_method = 'ml_advanced'
+                    
+                    report = cleaner.get_cleaning_report()
+                    
+                    if num_duplicates > 0:
+                        st.success(f"✅ ML Advanced found {len(duplicate_groups)} groups containing {num_duplicates} duplicate records!")
+                        
+                        # Show learning stats
+                        if report.get('learning_stats'):
+                            st.info(f"📊 ML Stats: {report['learning_stats']['patterns_learned']} patterns learned | Session #{report['learning_stats']['total_sessions']}")
+                        
+                        # Show what columns were analyzed
+                        st.info(f"📊 Analyzed columns: {', '.join(report.get('columns_analyzed', []))}")
+                        
+                        # Show confidence distribution
+                        if report.get('confidence_scores'):
+                            avg_confidence = np.mean(report['confidence_scores'])
+                            st.metric("Average ML Confidence", f"{avg_confidence:.1f}%")
+                        
+                        # Show duplicate groups
+                        st.markdown("### Duplicate Groups (ML Detected)")
+                        high_conf_groups = [g for g in duplicate_groups if g.get('group_confidence', 0) >= 65]
+                        low_conf_groups = [g for g in duplicate_groups if g.get('group_confidence', 0) < 65]
+                        
+                        if high_conf_groups:
+                            st.markdown(f"#### 🟢 High Confidence ML Matches ({len(high_conf_groups)} groups)")
+                            for idx, group in enumerate(high_conf_groups, 1):
+                                records = group['records']
+                                confidence = group['group_confidence']
+                                method = group.get('detection_method', 'ML')
+                                with st.expander(f"Group {idx} - {len(records)} records (Confidence: {confidence:.1f}% | Method: {method})"):
+                                    group_df = pd.DataFrame([r['record'] for r in records])
+                                    similarities = [f"{r.get('similarity', 100):.1f}%" for r in records[1:]]
+                                    
+                                    st.write(f"**ML Similarity Scores:** {similarities}")
+                                    
+                                    # Show phonetic info if available
+                                    if 'phonetic_similarity' in records[0]:
+                                        phonetic_scores = [f"{r.get('phonetic_similarity', 100):.1f}%" for r in records[1:]]
+                                        st.write(f"**Phonetic Match Scores:** {phonetic_scores}")
+                                    
+                                    st.dataframe(group_df, use_container_width=True)
+                        
+                        if low_conf_groups:
+                            st.markdown(f"#### 🟡 Lower Confidence ML Matches ({len(low_conf_groups)} groups) - Review Recommended")
+                            for idx, group in enumerate(low_conf_groups, 1):
+                                records = group['records']
+                                confidence = group['group_confidence']
+                                with st.expander(f"Group {idx} - {len(records)} records (Confidence: {confidence:.1f}%)"):
+                                    group_df = pd.DataFrame([r['record'] for r in records])
+                                    st.warning("⚠️ Lower ML confidence - please review before cleaning")
+                                    st.dataframe(group_df, use_container_width=True)
+                        
+                        # Show uncleaned data info
+                        if not uncleaned_df.empty:
+                            st.warning(f"⚠️ {len(uncleaned_df)} records flagged for manual review (low ML confidence)")
+                    else:
+                        st.info("🎉 No duplicates found with ML Advanced detection!")
+                        
+                        # Still show learning info
+                        if learn_mode:
+                            st.success("✅ ML model has learned patterns from this data for future use!")
+                
+                except Exception as e:
+                    st.error(f"Error during ML Advanced detection: {str(e)}")
+                    import traceback
+                    st.error(traceback.format_exc())
+    
+    elif detection_method == "Smart AI (Automatic)":
+        st.info("🤖 Smart AI will automatically identify the best columns and strategies for duplicate detection, similar to how a human would analyze the data.")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            auto_detect = st.checkbox("Auto-detect key columns", value=True, 
+                                     help="Let AI automatically identify which columns are most important for duplicate detection (IDs, names, emails, etc.)")
+        with col2:
+            smart_threshold = st.slider(
+                "Detection Sensitivity",
+                min_value=60,
+                max_value=95,
+                value=80,
+                help="Lower values detect more potential duplicates but may include false positives. 80% is balanced."
+            )
+        
+        if not auto_detect:
+            selected_columns = st.multiselect(
+                "Manual column selection",
+                available_columns,
+                default=available_columns[:min(3, len(available_columns))]
+            )
+        else:
+            selected_columns = None
+        
+        if st.button("🧠 Run Smart AI Detection", type="primary"):
+            with st.spinner("🤖 AI is analyzing your data with human-like intelligence..."):
+                try:
+                    duplicate_groups, num_duplicates, uncleaned_df = cleaner.detect_duplicates_smart_ai(
+                        auto_detect_columns=auto_detect,
+                        custom_columns=selected_columns,
+                        threshold=smart_threshold
+                    )
+                    
+                    st.session_state.duplicates_detected = True
+                    st.session_state.duplicate_groups = duplicate_groups
+                    st.session_state.uncleaned_data = uncleaned_df
+                    st.session_state.detection_method = 'smart_ai'
+                    
+                    report = cleaner.get_cleaning_report()
+                    
+                    if num_duplicates > 0:
+                        st.success(f"✅ Smart AI found {len(duplicate_groups)} groups containing {num_duplicates} duplicate records!")
+                        
+                        # Show what columns were analyzed
+                        st.info(f"📊 Analyzed columns: {', '.join(report.get('columns_analyzed', []))}")
+                        
+                        # Show confidence distribution
+                        if report.get('confidence_scores'):
+                            avg_confidence = np.mean(report['confidence_scores'])
+                            st.metric("Average Confidence", f"{avg_confidence:.1f}%")
+                        
+                        # Show duplicate groups
+                        st.markdown("### Duplicate Groups")
+                        high_conf_groups = [g for g in duplicate_groups if g.get('group_confidence', 0) >= 70]
+                        low_conf_groups = [g for g in duplicate_groups if g.get('group_confidence', 0) < 70]
+                        
+                        if high_conf_groups:
+                            st.markdown(f"#### 🟢 High Confidence Matches ({len(high_conf_groups)} groups)")
+                            for idx, group in enumerate(high_conf_groups, 1):
+                                records = group['records']
+                                confidence = group['group_confidence']
+                                with st.expander(f"Group {idx} - {len(records)} similar records (Confidence: {confidence:.1f}%)"):
+                                    group_df = pd.DataFrame([r['record'] for r in records])
+                                    similarities = [r.get('similarity', 100) for r in records[1:]]
+                                    
+                                    st.write(f"**Similarity Scores:** {[f'{s:.1f}%' for s in similarities]}")
+                                    st.dataframe(group_df, use_container_width=True)
+                        
+                        if low_conf_groups:
+                            st.markdown(f"#### 🟡 Lower Confidence Matches ({len(low_conf_groups)} groups) - Review Recommended")
+                            for idx, group in enumerate(low_conf_groups, 1):
+                                records = group['records']
+                                confidence = group['group_confidence']
+                                with st.expander(f"Group {idx} - {len(records)} records (Confidence: {confidence:.1f}%)"):
+                                    group_df = pd.DataFrame([r['record'] for r in records])
+                                    st.warning("⚠️ Lower confidence match - please review before cleaning")
+                                    st.dataframe(group_df, use_container_width=True)
+                        
+                        # Show uncleaned data info
+                        if not uncleaned_df.empty:
+                            st.warning(f"⚠️ {len(uncleaned_df)} records flagged for manual review (low confidence duplicates)")
+                    else:
+                        st.info("🎉 No duplicates found with Smart AI detection!")
+                
+                except Exception as e:
+                    st.error(f"Error during Smart AI detection: {str(e)}")
+    
+    elif detection_method == "Exact Match":
         selected_columns = st.multiselect(
             "Select columns for exact matching (leave empty to use all columns)",
             available_columns,
@@ -219,6 +709,7 @@ def detect_duplicates_page():
                 
                 st.session_state.duplicates_detected = True
                 st.session_state.duplicate_groups = None
+                st.session_state.detection_method = 'exact'
                 
                 if num_duplicates > 0:
                     st.success(f"✅ Found {num_duplicates} duplicate records!")
@@ -255,6 +746,7 @@ def detect_duplicates_page():
                     
                     st.session_state.duplicates_detected = True
                     st.session_state.duplicate_groups = duplicate_groups
+                    st.session_state.detection_method = 'fuzzy'
                     
                     if num_duplicates > 0:
                         st.success(f"✅ Found {len(duplicate_groups)} groups containing {num_duplicates} duplicate records!")
@@ -294,18 +786,56 @@ def clean_data_page():
             st.info(f"Detected {report.get('duplicates_found', 0)} duplicates using {report.get('cleaning_method', 'N/A')}")
             
             if report.get('duplicates_found', 0) > 0:
-                if st.button("🗑️ Remove Duplicates", type="primary"):
-                    with st.spinner("Removing duplicates..."):
-                        if st.session_state.duplicate_groups:
-                            cleaner.remove_fuzzy_duplicates(st.session_state.duplicate_groups)
-                        else:
-                            cols = report.get('columns_analyzed')
-                            cleaner.remove_exact_duplicates(columns=cols if cols else None)
-                        
-                        st.session_state.cleaning_complete = True
-                        new_report = cleaner.get_cleaning_report()
-                        st.success(f"✅ Removed {new_report['records_removed']} duplicate records!")
-                        st.info(f"Dataset now has {new_report['final_records']} records.")
+                detection_method = st.session_state.get('detection_method', 'unknown')
+                
+                # Special handling for ML Advanced and Smart AI
+                if detection_method in ['smart_ai', 'ml_advanced']:
+                    st.markdown("#### AI/ML Cleaning Options")
+                    
+                    clean_option = st.radio(
+                        "Select cleaning strategy",
+                        ["High confidence only (Recommended)", "All duplicates"],
+                        help="High confidence only removes duplicates the AI is very sure about. Low confidence matches will be exported separately for manual review."
+                    )
+                    
+                    high_conf_only = (clean_option == "High confidence only (Recommended)")
+                    
+                    button_label = "🗑️ Remove Duplicates with ML" if detection_method == 'ml_advanced' else "🗑️ Remove Duplicates with Smart AI"
+                    
+                    if st.button(button_label, type="primary"):
+                        with st.spinner("Removing duplicates..."):
+                            cleaned_data, uncleaned_data = cleaner.remove_smart_ai_duplicates(
+                                st.session_state.duplicate_groups,
+                                high_confidence_only=high_conf_only
+                            )
+                            
+                            st.session_state.cleaning_complete = True
+                            st.session_state.has_uncleaned = not uncleaned_data.empty
+                            
+                            new_report = cleaner.get_cleaning_report()
+                            st.success(f"✅ Removed {new_report['records_removed']} duplicate records!")
+                            st.info(f"✨ Cleaned dataset now has {len(cleaned_data)} records.")
+                            
+                            if not uncleaned_data.empty:
+                                st.warning(f"⚠️ {len(uncleaned_data)} records require manual review (low confidence duplicates)")
+                                st.info("💡 You can export both cleaned and uncleaned data separately from the Export page.")
+                            
+                            if detection_method == 'ml_advanced':
+                                st.success("🧠 ML model has been updated and will perform better on future data!")
+                else:
+                    # Original logic for exact/fuzzy
+                    if st.button("🗑️ Remove Duplicates", type="primary"):
+                        with st.spinner("Removing duplicates..."):
+                            if st.session_state.duplicate_groups:
+                                cleaner.remove_fuzzy_duplicates(st.session_state.duplicate_groups)
+                            else:
+                                cols = report.get('columns_analyzed')
+                                cleaner.remove_exact_duplicates(columns=cols if cols else None)
+                            
+                            st.session_state.cleaning_complete = True
+                            new_report = cleaner.get_cleaning_report()
+                            st.success(f"✅ Removed {new_report['records_removed']} duplicate records!")
+                            st.info(f"Dataset now has {new_report['final_records']} records.")
     
     with tab2:
         st.markdown("### Handle Missing Values")
@@ -494,12 +1024,20 @@ def export_data_page():
         return
     
     cleaner = st.session_state.cleaner
-    df = cleaner.df
+    has_uncleaned = st.session_state.get('has_uncleaned', False)
     
-    st.info("Export your cleaned data in various formats.")
+    st.info("Export your cleaned data in various formats. " + 
+            ("Uncleaned data (requiring manual review) can also be exported separately." if has_uncleaned else ""))
+    
+    # Check if we have separate cleaned/uncleaned data
+    if cleaner.cleaned_data is not None:
+        df = cleaner.cleaned_data
+        st.success("✅ Showing cleaned data from Smart AI processing")
+    else:
+        df = cleaner.df
     
     # Preview current data
-    st.markdown("### Current Data Preview")
+    st.markdown("### Cleaned Data Preview")
     st.dataframe(df.head(10), use_container_width=True)
     
     col1, col2 = st.columns(2)
@@ -517,50 +1055,80 @@ def export_data_page():
     col1, col2 = st.columns(2)
     
     with col1:
+        st.markdown("#### Cleaned Data")
         if export_format == "CSV":
             csv = df.to_csv(index=False)
             st.download_button(
-                label="📥 Download CSV",
+                label="📥 Download Cleaned CSV",
                 data=csv,
                 file_name=f"cleaned_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
                 mime="text/csv",
                 type="primary"
             )
-    
-    with col2:
-        if export_format == "Excel":
+        else:  # Excel
             buffer = io.BytesIO()
             with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
                 df.to_excel(writer, index=False, sheet_name='Cleaned Data')
             
             st.download_button(
-                label="📥 Download Excel",
+                label="📥 Download Cleaned Excel",
                 data=buffer.getvalue(),
                 file_name=f"cleaned_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 type="primary"
             )
     
+    with col2:
+        if has_uncleaned and cleaner.uncleaned_data is not None and not cleaner.uncleaned_data.empty:
+            st.markdown("#### Uncleaned Data (Manual Review Required)")
+            st.warning(f"⚠️ {len(cleaner.uncleaned_data)} records need review")
+            
+            if export_format == "CSV":
+                uncleaned_csv = cleaner.uncleaned_data.to_csv(index=False)
+                st.download_button(
+                    label="📥 Download Uncleaned CSV",
+                    data=uncleaned_csv,
+                    file_name=f"uncleaned_data_review_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    mime="text/csv"
+                )
+            else:  # Excel
+                buffer2 = io.BytesIO()
+                with pd.ExcelWriter(buffer2, engine='openpyxl') as writer:
+                    cleaner.uncleaned_data.to_excel(writer, index=False, sheet_name='Requires Review')
+                
+                st.download_button(
+                    label="📥 Download Uncleaned Excel",
+                    data=buffer2.getvalue(),
+                    file_name=f"uncleaned_data_review_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+        else:
+            st.info("No uncleaned data - all records were processed successfully!")
+    
     # Summary
     st.markdown("### Export Summary")
     report = cleaner.get_cleaning_report()
     
+    summary_rows = [
+        ["Original Records", report.get('total_records', 0)],
+        ["Exported Records (Cleaned)", len(df)],
+        ["Duplicates Removed", report.get('records_removed', 0)],
+        ["Cleaning Method", report.get('cleaning_method', 'Not applied')],
+    ]
+    
+    if has_uncleaned and cleaner.uncleaned_data is not None:
+        summary_rows.append(["Records Requiring Review", len(cleaner.uncleaned_data)])
+        summary_rows.append(["Data Quality", "High (with manual review recommended)"])
+    else:
+        summary_rows.append(["Data Quality", "High" if report.get('records_removed', 0) > 0 else "Not cleaned"])
+    
     summary_data = {
-        "Metric": [
-            "Original Records",
-            "Exported Records",
-            "Duplicates Removed",
-            "Cleaning Method",
-            "Data Quality"
-        ],
-        "Value": [
-            report.get('total_records', 0),
-            len(df),
-            report.get('records_removed', 0),
-            report.get('cleaning_method', 'Not applied'),
-            "High" if report.get('records_removed', 0) > 0 else "Not cleaned"
-        ]
+        "Metric": [row[0] for row in summary_rows],
+        "Value": [row[1] for row in summary_rows]
     }
+    
+    st.table(pd.DataFrame(summary_data))
+    
     
     st.table(pd.DataFrame(summary_data))
 
