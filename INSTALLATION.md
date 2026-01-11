@@ -49,7 +49,7 @@ On Windows, some ML packages require C++ compilation. You have several options:
 
 The easiest way to use all features on Windows:
 
-1. Install WSL2: https://docs.microsoft.com/en-us/windows/wsl/install
+1. Install WSL2: https://learn.microsoft.com/en-us/windows/wsl/install
 2. Install Ubuntu from Microsoft Store
 3. Open Ubuntu terminal and follow Linux instructions above
 

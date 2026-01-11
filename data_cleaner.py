@@ -561,11 +561,10 @@ class DataCleaner:
         # Check if ML dependencies are available
         if not ML_AVAILABLE:
             raise ImportError(
-                f"ML Advanced features require additional dependencies that are not installed.\n"
-                f"Error: {ML_IMPORT_ERROR}\n\n"
-                f"To use ML Advanced features, install the optional ML dependencies:\n"
-                f"  pip install -r requirements-ml.txt\n\n"
-                f"Or use 'Smart AI (Automatic)' detection which works with core dependencies."
+                "ML Advanced features require additional dependencies that are not installed.\n\n"
+                "To use ML Advanced features, install the optional ML dependencies:\n"
+                "  pip install -r requirements-ml.txt\n\n"
+                "Or use 'Smart AI (Automatic)' detection which works with core dependencies."
             )
         
         self.cleaning_report['cleaning_method'] = 'ML Advanced (Learning-Based)'
