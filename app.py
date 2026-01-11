@@ -1,5 +1,5 @@
 """
-AI CRM - Data Cleaning Application
+Professional Data Cleaning Suite
 A user-friendly web interface for cleaning CSV files and detecting duplicates.
 """
 
@@ -417,7 +417,7 @@ def main():
     
     # Sidebar with clean styling and step indicators
     with st.sidebar:
-        st.markdown("## 📊 Data Cleaning")
+        st.markdown(f"## {APP_ICON} Data Cleaning")
         st.markdown("---")
         st.markdown("### 📍 Step-by-Step Process")
         
